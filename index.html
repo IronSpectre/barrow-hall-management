@@ -427,11 +427,8 @@
       width: 100%;
       height: 100%;
       object-fit: cover;
-      display: none;
-    }
-    .featured-bg {
-      background: url('https://images.unsplash.com/photo-1574100841405-e03151df7f72?w=3840&q=80') center/cover no-repeat fixed;
       filter: brightness(0.4);
+      transition: opacity 0.6s;
     }
     .featured-content {
       position: relative;
@@ -1063,7 +1060,7 @@
       <div class="nav-links">
         <a href="#hero" class="active">Home</a>
         <a href="#about-us">About Us</a>
-        <a href="#portfolio">Portfolio</a>
+        <a href="portfolio.html">Portfolio</a>
         <a href="#insights">Insights</a>
       </div>
       <a href="#footer" class="nav-cta">Get In Touch</a>
@@ -1078,7 +1075,7 @@
   <div class="mobile-menu" id="mobileMenu">
     <a href="#hero" onclick="closeMenu()">Home</a>
     <a href="#about-us" onclick="closeMenu()">About Us</a>
-    <a href="#portfolio" onclick="closeMenu()">Portfolio</a>
+    <a href="portfolio.html" onclick="closeMenu()">Portfolio</a>
     <a href="#insights" onclick="closeMenu()">Insights</a>
     <a href="#footer" onclick="closeMenu()">Get In Touch</a>
   </div>
@@ -1143,7 +1140,7 @@
   <!-- FEATURED PORTFOLIO -->
   <section class="featured" id="portfolio">
     <div class="featured-bg">
-      <img src="https://images.unsplash.com/photo-1574100841405-e03151df7f72?w=3840&q=80" alt="Featured managed property" loading="lazy">
+      <img id="featuredBgImg" src="https://images.unsplash.com/photo-1574100841405-e03151df7f72?w=3840&q=80" alt="Featured managed property" loading="lazy">
     </div>
     <div class="featured-content">
       <div class="featured-inner">
@@ -1152,15 +1149,15 @@
           <div class="project-card">
             <div class="project-card-inner">
               <div class="project-card-img">
-                <img src="https://images.unsplash.com/photo-1659944798878-1418f843ba2b?w=800&q=80" alt="Kensington Terrace" loading="lazy">
+                <img id="slideCardImg" src="https://images.unsplash.com/photo-1659944798878-1418f843ba2b?w=800&q=80" alt="Property thumbnail" loading="lazy">
               </div>
               <div class="project-card-meta">
-                <div class="project-card-num">/01</div>
-                <div class="project-card-type">Residential Block Management</div>
+                <div class="project-card-num" id="slideNum">/01</div>
+                <div class="project-card-type" id="slideType">Residential Block Management</div>
               </div>
             </div>
           </div>
-          <a href="#" class="btn btn-white">
+          <a href="portfolio.html" class="btn btn-white" id="slideLink">
             <span class="arrow">
               <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="1.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
             </span>
@@ -1168,24 +1165,24 @@
           </a>
         </div>
         <div class="featured-details">
-          <h3>Kensington Terrace</h3>
+          <h3 id="slideName">Kensington Terrace</h3>
           <div class="feature-row">
-            <span class="feature-val">24</span>
-            <span class="feature-label">Units</span>
+            <span class="feature-val" id="slideStat1">24</span>
+            <span class="feature-label" id="slideLabel1">Units</span>
           </div>
           <div class="feature-row">
-            <span class="feature-val">98%</span>
-            <span class="feature-label">Occupancy</span>
+            <span class="feature-val" id="slideStat2">98%</span>
+            <span class="feature-label" id="slideLabel2">Occupancy</span>
           </div>
           <div class="feature-row">
-            <span class="feature-val">18,400 sqft</span>
-            <span class="feature-label">Total Area</span>
+            <span class="feature-val" id="slideStat3">18,400 sqft</span>
+            <span class="feature-label" id="slideLabel3">Total Area</span>
           </div>
           <div class="featured-nav">
-            <button aria-label="Previous">
+            <button aria-label="Previous" id="slidePrev">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
             </button>
-            <button aria-label="Next">
+            <button aria-label="Next" id="slideNext">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
             </button>
           </div>
@@ -1443,7 +1440,7 @@
             <h5>Pages</h5>
             <a href="#hero">Home</a>
             <a href="#about-us">About Us</a>
-            <a href="#portfolio">Portfolio</a>
+            <a href="portfolio.html">Portfolio</a>
             <a href="#insights">Insights</a>
             <a href="#footer">Contact</a>
           </div>
@@ -1566,6 +1563,94 @@
     }, { threshold: 0.1, rootMargin: '0px 0px -50px 0px' });
 
     document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+
+    // Portfolio slider
+    const slides = [
+      {
+        name: 'Kensington Terrace',
+        type: 'Residential Block Management',
+        bg: 'https://images.unsplash.com/photo-1574100841405-e03151df7f72?w=3840&q=80',
+        thumb: 'https://images.unsplash.com/photo-1659944798878-1418f843ba2b?w=800&q=80',
+        stat1: '24', label1: 'Units',
+        stat2: '98%', label2: 'Occupancy',
+        stat3: '18,400 sqft', label3: 'Total Area',
+        slug: 'kensington-terrace'
+      },
+      {
+        name: 'Belgravia Court',
+        type: 'Luxury Residential Management',
+        bg: 'https://images.unsplash.com/photo-1719328860718-21d7727dc627?w=3840&q=80',
+        thumb: 'https://images.unsplash.com/photo-1730669707837-4c1a9b292a95?w=800&q=80',
+        stat1: '16', label1: 'Units',
+        stat2: '100%', label2: 'Occupancy',
+        stat3: '22,600 sqft', label3: 'Total Area',
+        slug: 'belgravia-court'
+      },
+      {
+        name: 'Hackney Warehouse',
+        type: 'Mixed-Use Conversion',
+        bg: 'https://images.unsplash.com/photo-1602701124828-c2461e57a7f3?w=3840&q=80',
+        thumb: 'https://images.unsplash.com/photo-1739221889266-d607f3eaef40?w=800&q=80',
+        stat1: '38', label1: 'Units',
+        stat2: '96%', label2: 'Occupancy',
+        stat3: '31,200 sqft', label3: 'Total Area',
+        slug: 'hackney-warehouse'
+      },
+      {
+        name: 'Chelsea Gardens',
+        type: 'Period Block Management',
+        bg: 'https://images.unsplash.com/photo-1640013532153-bb494bce53ab?w=3840&q=80',
+        thumb: 'https://images.unsplash.com/photo-1640013529650-2c8a15d0b97c?w=800&q=80',
+        stat1: '12', label1: 'Units',
+        stat2: '100%', label2: 'Occupancy',
+        stat3: '14,800 sqft', label3: 'Total Area',
+        slug: 'chelsea-gardens'
+      },
+      {
+        name: 'Canary Wharf Tower',
+        type: 'Commercial Property Management',
+        bg: 'https://images.unsplash.com/photo-1770825492554-826f824aec93?w=3840&q=80',
+        thumb: 'https://images.unsplash.com/photo-1767522248570-713dbe026b71?w=800&q=80',
+        stat1: '8', label1: 'Floors',
+        stat2: '94%', label2: 'Occupancy',
+        stat3: '45,000 sqft', label3: 'Total Area',
+        slug: 'canary-wharf-tower'
+      }
+    ];
+
+    let currentSlide = 0;
+    const featuredSection = document.querySelector('.featured');
+
+    function updateSlide(index) {
+      const s = slides[index];
+      const content = featuredSection.querySelector('.featured-content');
+      content.style.opacity = '0';
+      content.style.transition = 'opacity 0.3s';
+      setTimeout(() => {
+        document.getElementById('featuredBgImg').src = s.bg;
+        document.getElementById('slideCardImg').src = s.thumb;
+        document.getElementById('slideNum').textContent = '/' + String(index + 1).padStart(2, '0');
+        document.getElementById('slideType').textContent = s.type;
+        document.getElementById('slideName').textContent = s.name;
+        document.getElementById('slideStat1').textContent = s.stat1;
+        document.getElementById('slideLabel1').textContent = s.label1;
+        document.getElementById('slideStat2').textContent = s.stat2;
+        document.getElementById('slideLabel2').textContent = s.label2;
+        document.getElementById('slideStat3').textContent = s.stat3;
+        document.getElementById('slideLabel3').textContent = s.label3;
+        document.getElementById('slideLink').href = 'portfolio.html#' + s.slug;
+        content.style.opacity = '1';
+      }, 300);
+    }
+
+    document.getElementById('slideNext').addEventListener('click', () => {
+      currentSlide = (currentSlide + 1) % slides.length;
+      updateSlide(currentSlide);
+    });
+    document.getElementById('slidePrev').addEventListener('click', () => {
+      currentSlide = (currentSlide - 1 + slides.length) % slides.length;
+      updateSlide(currentSlide);
+    });
   </script>
 </body>
 </html>

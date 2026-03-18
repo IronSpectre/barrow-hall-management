@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Portfolio - Barrow Hall Management</title>
+  <meta name="description" content="Explore our managed property portfolio across London — residential blocks, luxury apartments, mixed-use conversions, and commercial spaces.">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <style>
+    @font-face { font-family: 'Momo Trust Display'; font-style: normal; font-weight: 400; font-display: swap; src: url(https://fonts.gstatic.com/s/momotrustdisplay/v2/WWXPlieNYgyPZLyBUuEkKZFhFHyjqb1emGZM.woff2) format('woff2'); }
+    @font-face { font-family: 'Momo Trust Sans'; font-style: normal; font-weight: 400; font-display: swap; src: url(https://fonts.gstatic.com/s/momotrustsans/v4/BXR8vFfHh_fFyXlQWZgO0TyUN7Pt3pVCeYWqJnZSW7RpXT0few.woff2) format('woff2'); }
+    @font-face { font-family: 'Mona Sans'; font-style: normal; font-weight: 400; font-stretch: 100%; font-display: swap; src: url(https://fonts.gstatic.com/s/monasans/v4/o-0mIpQmx24alC5A4PNB6Ryti20_6n1iPHjcz6L1SoM-jCpoiyD9A-9a6VI.woff2) format('woff2'); }
+    @font-face { font-family: 'Mona Sans'; font-style: normal; font-weight: 500; font-stretch: 100%; font-display: swap; src: url(https://fonts.gstatic.com/s/monasans/v4/o-0mIpQmx24alC5A4PNB6Ryti20_6n1iPHjcz6L1SoM-jCpoiyDPA-9a6VI.woff2) format('woff2'); }
+    @font-face { font-family: 'Mona Sans'; font-style: normal; font-weight: 600; font-stretch: 100%; font-display: swap; src: url(https://fonts.gstatic.com/s/monasans/v4/o-0mIpQmx24alC5A4PNB6Ryti20_6n1iPHjcz6L1SoM-jCpoiyAjBO9a6VI.woff2) format('woff2'); }
+    @font-face { font-family: 'Mona Sans'; font-style: normal; font-weight: 700; font-stretch: 100%; font-display: swap; src: url(https://fonts.gstatic.com/s/monasans/v4/o-0mIpQmx24alC5A4PNB6Ryti20_6n1iPHjcz6L1SoM-jCpoiyAaBO9a6VI.woff2) format('woff2'); }
+    @font-face { font-family: 'Mona Sans'; font-style: normal; font-weight: 900; font-stretch: 100%; font-display: swap; src: url(https://fonts.gstatic.com/s/monasans/v4/o-0mIpQmx24alC5A4PNB6Ryti20_6n1iPHjcz6L1SoM-jCpoiyBUBO9a6VI.woff2) format('woff2'); }
+    @font-face { font-family: 'Playfair Display'; font-style: italic; font-weight: 400; font-display: swap; src: url(https://fonts.gstatic.com/s/playfairdisplay/v40/nuFRD-vYSZviVYUb_rj3ij__anPXDTnCjmHKM4nYO7KN_qiTXtHA-Q.woff2) format('woff2'); }
+
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+    :root {
+      --white: #ffffff; --black: #000000; --gray: #b5b0b0;
+      --font-display: 'Mona Sans', sans-serif; --font-body: 'Momo Trust Sans', sans-serif;
+      --font-serif: 'Playfair Display', serif; --font-heading: 'Momo Trust Display', sans-serif;
+    }
+    html { scroll-behavior: auto; }
+    body { font-family: var(--font-body); color: var(--black); background: var(--white); overflow-x: hidden; -webkit-font-smoothing: antialiased; }
+    a { text-decoration: none; color: inherit; }
+    img { display: block; max-width: 100%; }
+
+    /* NAV */
+    .navbar { position: fixed; top: 0; left: 0; right: 0; z-index: 100; padding: 24px 40px; transition: background 0.4s, backdrop-filter 0.4s; }
+    .navbar.scrolled { background: rgba(0,0,0,0.7); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); }
+    .nav-inner { width: 100%; display: flex; align-items: center; justify-content: space-between; }
+    .nav-logo { font-family: var(--font-heading); font-size: 22px; color: var(--white); letter-spacing: 0.05em; }
+    .nav-links { display: flex; gap: 32px; }
+    .nav-links a { font-family: var(--font-body); font-size: 14px; color: var(--white); position: relative; }
+    .nav-links a::after { content: ''; position: absolute; bottom: -2px; left: 0; width: 0; height: 1px; background: var(--white); transition: width 0.3s; }
+    .nav-links a:hover::after, .nav-links a.active::after { width: 100%; }
+    .nav-cta { font-family: var(--font-body); font-size: 14px; color: var(--white); }
+    .hamburger { display: none; flex-direction: column; gap: 6px; cursor: pointer; z-index: 101; }
+    .hamburger span { width: 24px; height: 1.5px; background: var(--white); transition: transform 0.3s; }
+    .hamburger.open span:first-child { transform: rotate(45deg) translate(5px, 5px); }
+    .hamburger.open span:last-child { transform: rotate(-45deg) translate(5px, -5px); }
+    .mobile-menu { display: none; position: fixed; inset: 0; background: var(--black); z-index: 99; flex-direction: column; justify-content: center; align-items: center; gap: 32px; }
+    .mobile-menu.open { display: flex; }
+    .mobile-menu a { font-family: var(--font-body); font-size: 20px; color: var(--white); }
+
+    /* HERO */
+    .page-hero {
+      position: relative; min-height: 60vh; display: flex; align-items: flex-end;
+      padding: 120px 40px 80px; overflow: hidden;
+    }
+    .page-hero-bg { position: absolute; inset: 0; }
+    .page-hero-bg img { width: 100%; height: 100%; object-fit: cover; }
+    .page-hero-bg::after { content: ''; position: absolute; inset: 0; background: rgba(0,0,0,0.5); }
+    .page-hero-content { position: relative; z-index: 1; max-width: 1200px; margin: 0 auto; width: 100%; }
+    .page-hero-content .tag { display: inline-flex; align-items: center; gap: 10px; padding: 8px 20px 8px 8px; border-radius: 100px; background: rgba(255,255,255,0.15); font-family: var(--font-body); font-size: 13px; color: var(--white); margin-bottom: 24px; }
+    .page-hero-content .tag-dot { width: 28px; height: 28px; border-radius: 50%; background: var(--white); display: flex; align-items: center; justify-content: center; }
+    .page-hero-content .tag-dot svg path { stroke: var(--black); }
+    .page-hero-content h1 { font-family: var(--font-display); font-weight: 550; font-size: clamp(38px, 6vw, 72px); line-height: 1.05; letter-spacing: -0.03em; color: var(--white); text-transform: uppercase; max-width: 700px; margin-bottom: 20px; }
+    .page-hero-content p { font-family: var(--font-body); font-size: 16px; line-height: 1.7; color: var(--white); opacity: 0.8; max-width: 500px; }
+
+    /* PROPERTY GRID */
+    .portfolio-section { padding: 100px 40px; }
+    .portfolio-inner { max-width: 1200px; margin: 0 auto; }
+    .portfolio-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 32px; }
+
+    .property-card {
+      position: relative; border-radius: 12px; overflow: hidden;
+      height: 500px; cursor: pointer; transition: transform 0.4s;
+    }
+    .property-card:hover { transform: translateY(-6px); }
+    .property-card img {
+      width: 100%; height: 100%; object-fit: cover;
+      transition: transform 0.6s;
+    }
+    .property-card:hover img { transform: scale(1.05); }
+    .property-card-overlay {
+      position: absolute; inset: 0;
+      background: linear-gradient(to top, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0) 50%);
+      display: flex; flex-direction: column; justify-content: flex-end;
+      padding: 32px;
+    }
+    .property-card-num { font-family: var(--font-body); font-size: 13px; color: var(--white); opacity: 0.6; margin-bottom: 8px; }
+    .property-card-name { font-family: var(--font-display); font-weight: 550; font-size: 28px; color: var(--white); letter-spacing: -0.02em; margin-bottom: 6px; }
+    .property-card-type { font-family: var(--font-body); font-size: 14px; color: var(--white); opacity: 0.7; margin-bottom: 16px; }
+    .property-card-stats { display: flex; gap: 24px; }
+    .property-card-stat { font-family: var(--font-body); font-size: 13px; color: var(--white); opacity: 0.8; }
+    .property-card-stat strong { font-weight: 600; display: block; font-size: 18px; margin-bottom: 2px; opacity: 1; }
+
+    /* PROPERTY DETAIL (expandable) */
+    .property-detail {
+      display: none; padding: 80px 40px; background: var(--black); color: var(--white);
+    }
+    .property-detail.active { display: block; }
+    .detail-inner { max-width: 1200px; margin: 0 auto; }
+    .detail-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 48px; }
+    .detail-header h2 { font-family: var(--font-display); font-weight: 550; font-size: clamp(34px, 4vw, 50px); letter-spacing: -0.02em; text-transform: uppercase; }
+    .detail-close { width: 48px; height: 48px; border-radius: 50%; border: 1px solid rgba(255,255,255,0.3); background: transparent; color: var(--white); cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 20px; transition: background 0.3s; }
+    .detail-close:hover { background: rgba(255,255,255,0.1); }
+    .detail-grid { display: grid; grid-template-columns: 1.5fr 1fr; gap: 60px; }
+    .detail-image { border-radius: 12px; overflow: hidden; height: 450px; }
+    .detail-image img { width: 100%; height: 100%; object-fit: cover; }
+    .detail-info-type { font-family: var(--font-body); font-size: 14px; opacity: 0.6; margin-bottom: 24px; }
+    .detail-stats { margin-bottom: 32px; }
+    .detail-stat-row { display: flex; justify-content: space-between; padding: 16px 0; border-top: 1px solid rgba(255,255,255,0.15); }
+    .detail-stat-val { font-family: var(--font-display); font-weight: 550; font-size: 20px; }
+    .detail-stat-label { font-family: var(--font-body); font-size: 14px; opacity: 0.6; }
+    .detail-desc { font-family: var(--font-body); font-size: 15px; line-height: 1.8; opacity: 0.7; margin-bottom: 32px; }
+    .detail-features { display: flex; flex-wrap: wrap; gap: 10px; }
+    .detail-feature { padding: 8px 20px; border-radius: 100px; border: 1px solid rgba(255,255,255,0.2); font-family: var(--font-body); font-size: 13px; color: var(--white); opacity: 0.8; }
+
+    /* FOOTER */
+    .footer { padding: 60px 40px 30px; background: var(--black); color: var(--white); border-top: 1px solid rgba(255,255,255,0.1); }
+    .footer-inner { max-width: 1200px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center; }
+    .footer-logo { font-family: var(--font-heading); font-size: 22px; }
+    .footer-links { display: flex; gap: 24px; }
+    .footer-links a { font-family: var(--font-body); font-size: 13px; opacity: 0.6; transition: opacity 0.3s; }
+    .footer-links a:hover { opacity: 1; }
+
+    /* ANIMATIONS */
+    @keyframes fadeUp { to { opacity: 1; transform: translateY(0); } }
+    .reveal { opacity: 0; transform: translateY(40px); transition: opacity 0.8s, transform 0.8s; }
+    .reveal.visible { opacity: 1; transform: translateY(0); }
+
+    /* RESPONSIVE */
+    @media (max-width: 1024px) {
+      .portfolio-grid { grid-template-columns: 1fr; }
+      .detail-grid { grid-template-columns: 1fr; }
+    }
+    @media (max-width: 768px) {
+      .navbar { padding: 16px 20px; }
+      .nav-links, .nav-cta { display: none; }
+      .hamburger { display: flex; }
+      .page-hero { padding: 100px 20px 60px; }
+      .portfolio-section { padding: 60px 20px; }
+      .property-card { height: 380px; }
+      .property-detail { padding: 60px 20px; }
+      .footer { padding: 40px 20px 20px; }
+      .footer-inner { flex-direction: column; gap: 20px; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- NAV -->
+  <nav class="navbar" id="navbar">
+    <div class="nav-inner">
+      <a href="index.html#hero" class="nav-logo">barrow hall</a>
+      <div class="nav-links">
+        <a href="index.html#hero">Home</a>
+        <a href="index.html#about-us">About Us</a>
+        <a href="portfolio.html" class="active">Portfolio</a>
+        <a href="index.html#insights">Insights</a>
+      </div>
+      <a href="index.html#footer" class="nav-cta">Get In Touch</a>
+      <div class="hamburger" id="hamburger"><span></span><span></span></div>
+    </div>
+  </nav>
+  <div class="mobile-menu" id="mobileMenu">
+    <a href="index.html#hero" onclick="closeMenu()">Home</a>
+    <a href="index.html#about-us" onclick="closeMenu()">About Us</a>
+    <a href="portfolio.html" onclick="closeMenu()">Portfolio</a>
+    <a href="index.html#insights" onclick="closeMenu()">Insights</a>
+    <a href="index.html#footer" onclick="closeMenu()">Get In Touch</a>
+  </div>
+
+  <!-- PAGE HERO -->
+  <section class="page-hero">
+    <div class="page-hero-bg">
+      <img src="https://images.unsplash.com/photo-1574100841405-e03151df7f72?w=3840&q=80" alt="London properties" loading="eager">
+    </div>
+    <div class="page-hero-content">
+      <div class="tag">
+        <span class="tag-dot"><svg viewBox="0 0 24 24" fill="none" stroke="black" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg></span>
+        Our Portfolio
+      </div>
+      <h1>Properties Under Our Management</h1>
+      <p>From period conversions in Kensington to warehouse developments in Hackney, we manage a diverse portfolio of London properties with the same standard of care and precision.</p>
+    </div>
+  </section>
+
+  <!-- PROPERTY DETAIL (hidden by default) -->
+  <div class="property-detail" id="propertyDetail">
+    <div class="detail-inner">
+      <div class="detail-header">
+        <h2 id="detailName"></h2>
+        <button class="detail-close" id="detailClose">&times;</button>
+      </div>
+      <div class="detail-grid">
+        <div class="detail-image"><img id="detailImg" src="" alt="Property"></div>
+        <div>
+          <div class="detail-info-type" id="detailType"></div>
+          <div class="detail-stats">
+            <div class="detail-stat-row"><span class="detail-stat-val" id="detailStat1"></span><span class="detail-stat-label" id="detailLabel1"></span></div>
+            <div class="detail-stat-row"><span class="detail-stat-val" id="detailStat2"></span><span class="detail-stat-label" id="detailLabel2"></span></div>
+            <div class="detail-stat-row"><span class="detail-stat-val" id="detailStat3"></span><span class="detail-stat-label" id="detailLabel3"></span></div>
+            <div class="detail-stat-row"><span class="detail-stat-val" id="detailStat4"></span><span class="detail-stat-label" id="detailLabel4"></span></div>
+          </div>
+          <p class="detail-desc" id="detailDesc"></p>
+          <div class="detail-features" id="detailFeatures"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PORTFOLIO GRID -->
+  <section class="portfolio-section">
+    <div class="portfolio-inner">
+      <div class="portfolio-grid" id="portfolioGrid"></div>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer class="footer">
+    <div class="footer-inner">
+      <div class="footer-logo">barrow hall</div>
+      <div class="footer-links">
+        <a href="index.html#hero">Home</a>
+        <a href="index.html#about-us">About</a>
+        <a href="portfolio.html">Portfolio</a>
+        <a href="index.html#insights">Insights</a>
+        <a href="index.html#footer">Contact</a>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    const properties = [
+      {
+        slug: 'kensington-terrace', name: 'Kensington Terrace', type: 'Residential Block Management',
+        img: 'https://images.unsplash.com/photo-1659944798878-1418f843ba2b?w=1600&q=80',
+        stat1: '24', label1: 'Units', stat2: '98%', label2: 'Occupancy',
+        stat3: '18,400 sqft', label3: 'Total Area', stat4: '2018', label4: 'Managed Since',
+        desc: 'A handsome Victorian terrace block in the heart of Kensington, comprising 24 generously proportioned apartments. We oversee all communal maintenance, service charge administration, and leaseholder communications, maintaining the building to the exacting standards its residents expect.',
+        features: ['Service Charge Admin', 'Communal Gardens', 'Concierge Oversight', 'Listed Building Compliance', 'Major Works Planning']
+      },
+      {
+        slug: 'belgravia-court', name: 'Belgravia Court', type: 'Luxury Residential Management',
+        img: 'https://images.unsplash.com/photo-1730669707837-4c1a9b292a95?w=1600&q=80',
+        stat1: '16', label1: 'Units', stat2: '100%', label2: 'Occupancy',
+        stat3: '22,600 sqft', label3: 'Total Area', stat4: '2016', label4: 'Managed Since',
+        desc: 'An exclusive Belgravia mansion block housing 16 luxury apartments, many with private balconies overlooking a central garden square. Our management encompasses 24/7 concierge coordination, bespoke maintenance scheduling, and comprehensive financial oversight for an international ownership base.',
+        features: ['24/7 Concierge', 'Private Gardens', 'International Owners', 'Heritage Facade', 'Premium Lettings']
+      },
+      {
+        slug: 'hackney-warehouse', name: 'Hackney Warehouse', type: 'Mixed-Use Conversion',
+        img: 'https://images.unsplash.com/photo-1602701124828-c2461e57a7f3?w=1600&q=80',
+        stat1: '38', label1: 'Units', stat2: '96%', label2: 'Occupancy',
+        stat3: '31,200 sqft', label3: 'Total Area', stat4: '2020', label4: 'Managed Since',
+        desc: 'A former industrial warehouse converted into 32 residential lofts and 6 ground-floor commercial units. We manage the complex interplay between residential and commercial tenants, handle all compliance for the mixed-use designation, and coordinate ongoing capital improvement programmes.',
+        features: ['Mixed-Use Compliance', 'Commercial Tenants', 'Loft Apartments', 'Bike Storage', 'Roof Terrace']
+      },
+      {
+        slug: 'chelsea-gardens', name: 'Chelsea Gardens', type: 'Period Block Management',
+        img: 'https://images.unsplash.com/photo-1640013529650-2c8a15d0b97c?w=1600&q=80',
+        stat1: '12', label1: 'Units', stat2: '100%', label2: 'Occupancy',
+        stat3: '14,800 sqft', label3: 'Total Area', stat4: '2015', label4: 'Managed Since',
+        desc: 'A boutique Edwardian mansion block in Chelsea with just 12 apartments arranged around a private communal garden. Our long-standing relationship with the resident management company ensures continuity, trust, and meticulous upkeep of this Grade II listed property.',
+        features: ['Grade II Listed', 'Resident Management Co.', 'Private Garden', 'Period Features', 'Lift Maintenance']
+      },
+      {
+        slug: 'canary-wharf-tower', name: 'Canary Wharf Tower', type: 'Commercial Property Management',
+        img: 'https://images.unsplash.com/photo-1767522248570-713dbe026b71?w=1600&q=80',
+        stat1: '8', label1: 'Floors', stat2: '94%', label2: 'Occupancy',
+        stat3: '45,000 sqft', label3: 'Total Area', stat4: '2021', label4: 'Managed Since',
+        desc: 'A modern commercial tower in the Canary Wharf estate, housing a mix of corporate tenants across 8 floors. We deliver full facilities management, lease administration, and tenant fit-out coordination, ensuring the building meets the expectations of its blue-chip occupiers.',
+        features: ['Facilities Management', 'Lease Administration', 'Fit-Out Coordination', 'HVAC Systems', 'Security Management']
+      }
+    ];
+
+    // Render grid
+    const grid = document.getElementById('portfolioGrid');
+    properties.forEach((p, i) => {
+      const card = document.createElement('div');
+      card.className = 'property-card reveal';
+      card.id = p.slug;
+      card.innerHTML = `
+        <img src="${p.img}" alt="${p.name}" loading="lazy">
+        <div class="property-card-overlay">
+          <div class="property-card-num">/${String(i+1).padStart(2,'0')}</div>
+          <div class="property-card-name">${p.name}</div>
+          <div class="property-card-type">${p.type}</div>
+          <div class="property-card-stats">
+            <div class="property-card-stat"><strong>${p.stat1}</strong>${p.label1}</div>
+            <div class="property-card-stat"><strong>${p.stat2}</strong>${p.label2}</div>
+            <div class="property-card-stat"><strong>${p.stat3}</strong>${p.label3}</div>
+          </div>
+        </div>
+      `;
+      card.addEventListener('click', () => openDetail(i));
+      grid.appendChild(card);
+    });
+
+    // Detail panel
+    const detailPanel = document.getElementById('propertyDetail');
+    function openDetail(i) {
+      const p = properties[i];
+      document.getElementById('detailName').textContent = p.name;
+      document.getElementById('detailImg').src = p.img;
+      document.getElementById('detailType').textContent = p.type;
+      document.getElementById('detailStat1').textContent = p.stat1;
+      document.getElementById('detailLabel1').textContent = p.label1;
+      document.getElementById('detailStat2').textContent = p.stat2;
+      document.getElementById('detailLabel2').textContent = p.label2;
+      document.getElementById('detailStat3').textContent = p.stat3;
+      document.getElementById('detailLabel3').textContent = p.label3;
+      document.getElementById('detailStat4').textContent = p.stat4;
+      document.getElementById('detailLabel4').textContent = p.label4;
+      document.getElementById('detailDesc').textContent = p.desc;
+      const featuresCont = document.getElementById('detailFeatures');
+      featuresCont.innerHTML = p.features.map(f => `<span class="detail-feature">${f}</span>`).join('');
+      detailPanel.classList.add('active');
+      detailPanel.scrollIntoView({ behavior: 'smooth' });
+    }
+    document.getElementById('detailClose').addEventListener('click', () => {
+      detailPanel.classList.remove('active');
+    });
+
+    // Open from hash
+    if (window.location.hash) {
+      const slug = window.location.hash.slice(1);
+      const idx = properties.findIndex(p => p.slug === slug);
+      if (idx !== -1) setTimeout(() => openDetail(idx), 300);
+    }
+
+    // Navbar
+    const navbar = document.getElementById('navbar');
+    window.addEventListener('scroll', () => navbar.classList.toggle('scrolled', window.scrollY > 50));
+    const hamburger = document.getElementById('hamburger');
+    const mobileMenu = document.getElementById('mobileMenu');
+    hamburger.addEventListener('click', () => { hamburger.classList.toggle('open'); mobileMenu.classList.toggle('open'); document.body.style.overflow = mobileMenu.classList.contains('open') ? 'hidden' : ''; });
+    function closeMenu() { hamburger.classList.remove('open'); mobileMenu.classList.remove('open'); document.body.style.overflow = ''; }
+
+    // Reveal
+    const observer = new IntersectionObserver(entries => { entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); }); }, { threshold: 0.1 });
+    document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+  </script>
+</body>
+</html>

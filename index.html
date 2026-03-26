@@ -1029,25 +1029,40 @@
       .navbar { padding: 16px 20px; }
       .nav-links, .nav-cta { display: none; }
       .hamburger { display: flex; }
-      .hero { padding: 60px 20px; }
+      .hero { padding: 60px 20px 160px; }
+      .hero-bg { background-attachment: scroll; }
       .about { padding: 80px 20px; }
+      .about-inner { gap: 48px; }
       .services { padding: 80px 20px; }
       .services-grid { grid-template-columns: 1fr; }
+      .service-item { padding: 28px 20px; }
       .service-item:nth-child(odd) { border-right: none; }
       .articles { padding: 80px 20px; }
       .articles-grid { grid-template-columns: 1fr; }
+      .article-img { height: 200px; }
       .faq { padding: 80px 20px; }
-      .cta { padding: 80px 20px; }
+      .cta { padding: 80px 20px; min-height: auto; }
+      .cta-bg { background-attachment: scroll; }
+      .cta-bottom { flex-direction: column; align-items: flex-start; gap: 16px; }
       .footer { padding: 60px 20px 30px; }
+      .footer-top { gap: 40px; margin-bottom: 40px; }
       .footer-nav { grid-template-columns: 1fr 1fr; }
       .container { padding: 0 20px; }
       .featured-content { padding: 80px 20px; }
+      .featured-details h3 { font-size: clamp(32px, 8vw, 48px); }
       .service-image { height: 260px; }
     }
 
     @media (max-width: 480px) {
       .footer-nav { grid-template-columns: 1fr; }
       .project-card-img { width: 100px; height: 100px; }
+      .hero { padding: 60px 16px 120px; }
+      .stat-number { font-size: clamp(28px, 8vw, 38px); }
+      .cta h2 { font-size: clamp(32px, 8vw, 44px); }
+      .footer-top h3 { font-size: clamp(32px, 8vw, 44px); }
+      .footer-form { flex-direction: column; }
+      .footer-form input { border-radius: 100px; border-right: 1px solid rgba(255,255,255,0.2); }
+      .footer-form button { border-radius: 100px; border-left: 1px solid rgba(255,255,255,0.2); }
     }
   </style>
 </head>
@@ -1061,7 +1076,6 @@
         <a href="#hero" class="active">Home</a>
         <a href="#about-us">About Us</a>
         <a href="portfolio.html">Portfolio</a>
-        <a href="#insights">Insights</a>
       </div>
       <a href="#footer" class="nav-cta">Get In Touch</a>
       <div class="hamburger" id="hamburger">
@@ -1076,7 +1090,6 @@
     <a href="#hero" onclick="closeMenu()">Home</a>
     <a href="#about-us" onclick="closeMenu()">About Us</a>
     <a href="portfolio.html" onclick="closeMenu()">Portfolio</a>
-    <a href="#insights" onclick="closeMenu()">Insights</a>
     <a href="#footer" onclick="closeMenu()">Get In Touch</a>
   </div>
 
@@ -1249,63 +1262,7 @@
     </div>
   </section>
 
-  <!-- INSIGHTS / ARTICLES -->
-  <section class="articles" id="insights">
-    <div class="articles-inner">
-      <div class="articles-header">
-        <div class="articles-header-left reveal">
-          <div class="tag">
-            <span class="tag-dot">
-              <svg viewBox="0 0 24 24" fill="none" stroke="black" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
-            </span>
-            Latest Insights
-          </div>
-          <h2>Property Management News &amp; Guidance</h2>
-        </div>
-        <div class="articles-header-right reveal">
-          <p>Expert perspectives on property legislation, maintenance strategy, and the evolving landscape of residential and commercial management.</p>
-          <a href="#" class="btn btn-outline" style="margin-top: 24px; align-self: flex-start;">
-            <span class="arrow" style="border: 1px solid rgba(255,255,255,0.3); background: transparent;">
-              <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="1.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
-            </span>
-            View All Insights
-          </a>
-        </div>
-      </div>
-      <div class="articles-grid">
-        <a href="#" class="article-card reveal">
-          <div class="article-img">
-            <img src="https://images.unsplash.com/photo-1640013529650-2c8a15d0b97c?w=1200&q=80" alt="Understanding Section 20 Consultations" loading="lazy">
-          </div>
-          <div class="article-meta">
-            <span class="article-date">Feb 12, 2026</span>
-            <span class="article-cat">Legislation</span>
-          </div>
-          <div class="article-title">Understanding Section 20 Consultation Requirements</div>
-        </a>
-        <a href="#" class="article-card reveal">
-          <div class="article-img">
-            <img src="https://images.unsplash.com/photo-1612967201255-b0d6d6a977f4?w=1200&q=80" alt="Planned Maintenance" loading="lazy">
-          </div>
-          <div class="article-meta">
-            <span class="article-date">Jan 28, 2026</span>
-            <span class="article-cat">Maintenance</span>
-          </div>
-          <div class="article-title">Why Planned Maintenance Saves Owners Thousands</div>
-        </a>
-        <a href="#" class="article-card reveal">
-          <div class="article-img">
-            <img src="https://images.unsplash.com/photo-1588021418580-a2c6b6eeec64?w=1200&q=80" alt="Tenant Retention" loading="lazy">
-          </div>
-          <div class="article-meta">
-            <span class="article-date">Jan 15, 2026</span>
-            <span class="article-cat">Lettings</span>
-          </div>
-          <div class="article-title">Tenant Retention Strategies That Actually Work</div>
-        </a>
-      </div>
-    </div>
-  </section>
+
 
   <!-- FAQ -->
   <section class="faq" id="faq">
@@ -1441,7 +1398,6 @@
             <a href="#hero">Home</a>
             <a href="#about-us">About Us</a>
             <a href="portfolio.html">Portfolio</a>
-            <a href="#insights">Insights</a>
             <a href="#footer">Contact</a>
           </div>
           <div class="footer-nav-col">
@@ -1465,8 +1421,11 @@
   </footer>
 
   <script>
-    // Smooth scroll with lerp
+    // Smooth scroll with lerp (desktop only — touch devices use native scroll)
     (function() {
+      const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+      if (isTouchDevice) return;
+
       let currentScroll = window.scrollY;
       let targetScroll = window.scrollY;
       const ease = 0.07;
@@ -1651,6 +1610,20 @@
       currentSlide = (currentSlide - 1 + slides.length) % slides.length;
       updateSlide(currentSlide);
     });
+
+    // Touch swipe for featured slider
+    (function() {
+      let touchStartX = 0;
+      featuredSection.addEventListener('touchstart', e => { touchStartX = e.touches[0].clientX; }, { passive: true });
+      featuredSection.addEventListener('touchend', e => {
+        const diff = touchStartX - e.changedTouches[0].clientX;
+        if (Math.abs(diff) > 50) {
+          if (diff > 0) { currentSlide = (currentSlide + 1) % slides.length; }
+          else { currentSlide = (currentSlide - 1 + slides.length) % slides.length; }
+          updateSlide(currentSlide);
+        }
+      }, { passive: true });
+    })();
   </script>
 </body>
 </html>

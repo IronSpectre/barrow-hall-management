@@ -1030,7 +1030,8 @@
       .nav-links, .nav-cta { display: none; }
       .hamburger { display: flex; }
       .hero { padding: 60px 20px 160px; }
-      .hero-bg { background-attachment: scroll; }
+      .hero-bg { background: none; }
+      .hero-bg img { display: block; }
       .about { padding: 80px 20px; }
       .about-inner { gap: 48px; }
       .services { padding: 80px 20px; }
@@ -1042,7 +1043,8 @@
       .article-img { height: 200px; }
       .faq { padding: 80px 20px; }
       .cta { padding: 80px 20px; min-height: auto; }
-      .cta-bg { background-attachment: scroll; }
+      .cta-bg { background: none; filter: none; }
+      .cta-bg img { display: block; filter: brightness(0.35); }
       .cta-bottom { flex-direction: column; align-items: flex-start; gap: 16px; }
       .footer { padding: 60px 20px 30px; }
       .footer-top { gap: 40px; margin-bottom: 40px; }
@@ -1111,7 +1113,7 @@
     </div>
     <div class="hero-heading-wrap">
       <div class="hero-heading">
-        <h1 id="heroTitle">barrow <span class="serif">hall</span></h1>
+        <h1 id="heroTitle">BARROW <span class="serif">hall</span></h1>
       </div>
     </div>
   </section>
@@ -1423,8 +1425,8 @@
   <script>
     // Smooth scroll with lerp (desktop only — touch devices use native scroll)
     (function() {
-      const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
-      if (isTouchDevice) return;
+      const isMobile = window.matchMedia('(pointer: coarse)').matches || window.innerWidth <= 1024;
+      if (isMobile) return;
 
       let currentScroll = window.scrollY;
       let targetScroll = window.scrollY;
@@ -1469,11 +1471,18 @@
       const container = document.querySelector('.hero');
       const heroContent = document.querySelector('.hero-content');
       if (!h1 || !container || !heroContent) return;
+      const isMobile = window.innerWidth <= 768;
       const targetWidth = container.offsetWidth;
       h1.style.fontSize = '10px';
       const naturalWidth = h1.scrollWidth;
       const scale = (targetWidth / naturalWidth) * 0.92;
       h1.style.fontSize = (10 * scale) + 'px';
+      if (isMobile) {
+        heroContent.style.paddingLeft = '20px';
+        document.querySelector('.navbar').style.paddingLeft = '';
+        document.querySelector('.navbar').style.paddingRight = '';
+        return;
+      }
       // Align hero content left edge to title left edge
       requestAnimationFrame(() => {
         const titleLeft = h1.getBoundingClientRect().left;

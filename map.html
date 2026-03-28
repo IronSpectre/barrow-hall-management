@@ -1,0 +1,1518 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Map - Barrow Hall Management</title>
+  <meta name="description" content="Interactive map of Barrow Hall Management properties across London.">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Space+Grotesk:wght@400;500;600;700&display=swap');
+    @font-face { font-family: 'Momo Trust Display'; font-style: normal; font-weight: 400; font-display: swap; src: url(https://fonts.gstatic.com/s/momotrustdisplay/v2/WWXPlieNYgyPZLyBUuEkKZFhFHyjqb1emGZM.woff2) format('woff2'); }
+    @font-face { font-family: 'Momo Trust Sans'; font-style: normal; font-weight: 400; font-display: swap; src: url(https://fonts.gstatic.com/s/momotrustsans/v4/BXR8vFfHh_fFyXlQWZgO0TyUN7Pt3pVCeYWqJnZSW7RpXT0few.woff2) format('woff2'); }
+    @font-face { font-family: 'Mona Sans'; font-style: normal; font-weight: 400; font-stretch: 100%; font-display: swap; src: url(https://fonts.gstatic.com/s/monasans/v4/o-0mIpQmx24alC5A4PNB6Ryti20_6n1iPHjcz6L1SoM-jCpoiyD9A-9a6VI.woff2) format('woff2'); }
+    @font-face { font-family: 'Playfair Display'; font-style: italic; font-weight: 400; font-display: swap; src: url(https://fonts.gstatic.com/s/playfairdisplay/v40/nuFRD-vYSZviVYUb_rj3ij__anPXDTnCjmHKM4nYO7KN_qiTXtHA-Q.woff2) format('woff2'); }
+
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+    :root {
+      --blue: #5B8DEF;
+      --blue-light: #A8C4F5;
+      --blue-dark: #3A6BD4;
+      --bg: #F4F6FA;
+      --dark: #1A1D2E;
+      --gray: #6B7280;
+      --white: #FFFFFF;
+      --black: #000000;
+      --font-display: 'Mona Sans', sans-serif;
+      --font-body: 'Momo Trust Sans', sans-serif;
+      --font-serif: 'Playfair Display', serif;
+      --font-heading: 'Momo Trust Display', sans-serif;
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--bg);
+      color: var(--dark);
+      overflow: hidden;
+      height: 100vh;
+      width: 100vw;
+    }
+
+    a { text-decoration: none; color: inherit; }
+    img { display: block; max-width: 100%; }
+
+    /* NAV */
+    .navbar { position: fixed; top: 0; left: 0; right: 0; z-index: 100; padding: 24px 40px; transition: background 0.4s, backdrop-filter 0.4s; }
+    .navbar.scrolled { background: rgba(0,0,0,0.7); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); }
+    .nav-inner { width: 100%; display: flex; align-items: center; justify-content: space-between; }
+    .nav-logo { font-family: var(--font-heading); font-size: 22px; color: var(--dark); letter-spacing: 0.05em; }
+    .nav-links { display: flex; gap: 32px; }
+    .nav-links a { font-family: var(--font-body); font-size: 14px; color: var(--dark); position: relative; }
+    .nav-links a::after { content: ''; position: absolute; bottom: -2px; left: 0; width: 0; height: 1px; background: var(--dark); transition: width 0.3s; }
+    .nav-links a:hover::after, .nav-links a.active::after { width: 100%; }
+    .nav-cta { font-family: var(--font-body); font-size: 14px; color: var(--dark); }
+    .hamburger { display: none; flex-direction: column; gap: 6px; cursor: pointer; z-index: 101; }
+    .hamburger span { width: 24px; height: 1.5px; background: var(--dark); transition: transform 0.3s; }
+    .hamburger.open span:first-child { transform: rotate(45deg) translate(5px, 5px); }
+    .hamburger.open span:last-child { transform: rotate(-45deg) translate(5px, -5px); }
+    .mobile-menu { display: none; position: fixed; inset: 0; background: var(--black); z-index: 99; flex-direction: column; justify-content: center; align-items: center; gap: 32px; }
+    .mobile-menu.open { display: flex; }
+    .mobile-menu a { font-family: var(--font-body); font-size: 20px; color: var(--white); }
+
+    /* CANVAS */
+    #canvas-container {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      z-index: 1;
+    }
+    canvas { display: block; }
+
+    /* UI OVERLAYS */
+    .ui-overlay {
+      position: fixed;
+      z-index: 10;
+      pointer-events: none;
+    }
+    .ui-overlay * { pointer-events: auto; }
+
+    .sidebar {
+      top: 50%;
+      right: 28px;
+      transform: translateY(-50%);
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .district-btn {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      border: 1.5px solid rgba(26,29,46,0.15);
+      background: rgba(255,255,255,0.85);
+      backdrop-filter: blur(10px);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 10px;
+      font-weight: 600;
+      color: var(--gray);
+      transition: all 0.3s ease;
+    }
+    .district-btn:hover, .district-btn.active {
+      background: var(--blue);
+      color: white;
+      border-color: var(--blue);
+      transform: scale(1.1);
+    }
+
+    .info-panel {
+      bottom: 32px;
+      left: 32px;
+      background: rgba(255,255,255,0.92);
+      backdrop-filter: blur(20px);
+      border-radius: 16px;
+      padding: 24px 28px;
+      min-width: 320px;
+      max-width: 380px;
+      border: 1px solid rgba(26,29,46,0.06);
+      box-shadow: 0 8px 40px rgba(0,0,0,0.08);
+      transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    .info-panel.visible { opacity: 1; transform: translateY(0); }
+    .info-panel .district-label {
+      font-size: 10px; font-weight: 600; text-transform: uppercase;
+      letter-spacing: 1.5px; color: var(--blue); margin-bottom: 6px;
+    }
+    .info-panel h2 {
+      font-family: 'Space Grotesk', sans-serif; font-size: 22px;
+      font-weight: 600; margin-bottom: 12px; letter-spacing: -0.5px;
+    }
+    .info-panel p { font-size: 13px; color: var(--gray); line-height: 1.6; margin-bottom: 16px; }
+    .info-stats {
+      display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px;
+      padding-top: 16px; border-top: 1px solid rgba(26,29,46,0.06);
+    }
+    .stat-item .stat-value {
+      font-family: 'Space Grotesk', sans-serif; font-size: 18px;
+      font-weight: 600; color: var(--dark);
+    }
+    .stat-item .stat-label {
+      font-size: 10px; color: var(--gray); margin-top: 2px;
+      text-transform: uppercase; letter-spacing: 0.5px;
+    }
+
+    .controls-hint {
+      bottom: 32px; right: 28px; font-size: 11px;
+      color: var(--gray); text-align: right; line-height: 1.8; opacity: 0.6;
+    }
+    .controls-hint span { display: block; }
+
+    .map-title {
+      top: 50%; left: 50%; transform: translate(-50%, -50%);
+      text-align: center; transition: opacity 0.5s;
+    }
+    .map-title h1 {
+      font-family: 'Space Grotesk', sans-serif; font-size: 42px;
+      font-weight: 700; letter-spacing: -1.5px; color: var(--dark); opacity: 0.08;
+    }
+
+    /* LOADING */
+    .loading-overlay {
+      position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+      background: var(--bg); z-index: 100; display: flex;
+      align-items: center; justify-content: center; flex-direction: column;
+      gap: 16px; transition: opacity 0.6s ease;
+    }
+    .loading-overlay.hidden { opacity: 0; pointer-events: none; }
+    .loading-text {
+      font-family: 'Space Grotesk', sans-serif; font-size: 14px;
+      color: var(--gray); letter-spacing: 2px; text-transform: uppercase;
+    }
+    .loading-bar { width: 120px; height: 2px; background: rgba(26,29,46,0.1); border-radius: 2px; overflow: hidden; }
+    .loading-bar-fill { height: 100%; background: var(--blue); border-radius: 2px; animation: loadBar 1.5s ease-in-out forwards; }
+    @keyframes loadBar { from { width: 0; } to { width: 100%; } }
+
+    /* RESPONSIVE */
+    @media (max-width: 768px) {
+      .navbar { padding: 16px 20px; }
+      .nav-links, .nav-cta { display: none; }
+      .hamburger { display: flex; }
+      .sidebar { right: 12px; gap: 8px; }
+      .district-btn { width: 34px; height: 34px; font-size: 9px; }
+      .info-panel { left: 12px; right: 12px; bottom: 12px; min-width: auto; max-width: none; padding: 18px 20px; }
+      .info-panel h2 { font-size: 18px; }
+      .info-panel p { font-size: 12px; }
+      .stat-item .stat-value { font-size: 15px; }
+      .controls-hint { display: none; }
+      .map-title h1 { font-size: 28px; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- LOADING -->
+  <div class="loading-overlay" id="loader">
+    <div class="loading-text">Loading London</div>
+    <div class="loading-bar"><div class="loading-bar-fill"></div></div>
+  </div>
+
+  <!-- NAV -->
+  <nav class="navbar" id="navbar">
+    <div class="nav-inner">
+      <a href="index.html#hero" class="nav-logo">BARROW HALL</a>
+      <div class="nav-links">
+        <a href="index.html#hero">Home</a>
+        <a href="index.html#about-us">About Us</a>
+        <a href="portfolio.html">Portfolio</a>
+        <a href="map.html" class="active">Map</a>
+      </div>
+      <a href="index.html#footer" class="nav-cta">Get In Touch</a>
+      <div class="hamburger" id="hamburger"><span></span><span></span></div>
+    </div>
+  </nav>
+  <div class="mobile-menu" id="mobileMenu">
+    <a href="index.html#hero" onclick="closeMenu()">Home</a>
+    <a href="index.html#about-us" onclick="closeMenu()">About Us</a>
+    <a href="portfolio.html" onclick="closeMenu()">Portfolio</a>
+    <a href="map.html" onclick="closeMenu()">Map</a>
+    <a href="index.html#footer" onclick="closeMenu()">Get In Touch</a>
+  </div>
+
+  <!-- THREE.JS CANVAS -->
+  <div id="canvas-container"></div>
+
+  <!-- UI OVERLAYS -->
+  <div class="ui-overlay sidebar" id="sidebar"></div>
+
+  <div class="ui-overlay info-panel" id="info-panel">
+    <div class="district-label" id="panel-label"></div>
+    <h2 id="panel-title"></h2>
+    <p id="panel-desc"></p>
+    <div class="info-stats">
+      <div class="stat-item">
+        <div class="stat-value" id="stat-units">&mdash;</div>
+        <div class="stat-label">Units</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-value" id="stat-value">&mdash;</div>
+        <div class="stat-label">Avg. Value</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-value" id="stat-yield">&mdash;</div>
+        <div class="stat-label">Yield</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="ui-overlay controls-hint">
+    <span>Drag to rotate</span>
+    <span>Scroll to zoom</span>
+    <span>Click district to explore</span>
+  </div>
+
+  <div class="ui-overlay map-title" id="map-title">
+    <h1>LONDON</h1>
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <script>
+    // Navbar
+    const navbarEl = document.getElementById('navbar');
+    window.addEventListener('scroll', () => navbarEl.classList.toggle('scrolled', window.scrollY > 50));
+    const hamburger = document.getElementById('hamburger');
+    const mobileMenu = document.getElementById('mobileMenu');
+    hamburger.addEventListener('click', () => { hamburger.classList.toggle('open'); mobileMenu.classList.toggle('open'); document.body.style.overflow = mobileMenu.classList.contains('open') ? 'hidden' : ''; });
+    function closeMenu() { hamburger.classList.remove('open'); mobileMenu.classList.remove('open'); document.body.style.overflow = ''; }
+
+    // THREE.JS MAP
+    const districts = [
+      {
+        id: 'CW', name: 'Canary Wharf', label: 'Docklands',
+        pos: [2.5, 0, 1.2], color: 0x5B8DEF,
+        desc: 'Premium waterfront developments overlooking the Thames. Modern towers with panoramic city views.',
+        units: 342, value: '\u00A31.2M', yield: '4.1%',
+        buildings: [
+          { x: 2.2, z: 0.8, w: 0.4, h: 2.8, d: 0.4 },
+          { x: 2.8, z: 1.0, w: 0.35, h: 3.2, d: 0.35 },
+          { x: 2.5, z: 1.5, w: 0.45, h: 2.5, d: 0.4 },
+          { x: 3.0, z: 0.6, w: 0.3, h: 2.0, d: 0.3 },
+          { x: 2.1, z: 1.3, w: 0.25, h: 1.6, d: 0.25 },
+          { x: 2.7, z: 0.5, w: 0.2, h: 1.2, d: 0.3 },
+        ]
+      },
+      {
+        id: 'KX', name: 'Kings Cross', label: 'North London',
+        pos: [-0.5, 0, -2.5], color: 0x7C6FEB,
+        desc: 'Regenerated quarter blending Victorian heritage with contemporary living spaces.',
+        units: 218, value: '\u00A3890K', yield: '3.8%',
+        buildings: [
+          { x: -0.7, z: -2.8, w: 0.5, h: 1.8, d: 0.5 },
+          { x: -0.2, z: -2.3, w: 0.4, h: 2.2, d: 0.4 },
+          { x: -0.9, z: -2.1, w: 0.35, h: 1.5, d: 0.35 },
+          { x: -0.4, z: -2.7, w: 0.25, h: 1.0, d: 0.3 },
+          { x: -0.1, z: -2.0, w: 0.2, h: 1.3, d: 0.2 },
+        ]
+      },
+      {
+        id: 'SW', name: 'South Bank', label: 'Southwark',
+        pos: [0.5, 0, 1.8], color: 0x4ECDC4,
+        desc: 'Cultural hub properties near Tate Modern and the National Theatre. High demand rentals.',
+        units: 156, value: '\u00A31.05M', yield: '3.6%',
+        buildings: [
+          { x: 0.3, z: 1.6, w: 0.6, h: 1.6, d: 0.4 },
+          { x: 0.8, z: 2.0, w: 0.35, h: 2.0, d: 0.35 },
+          { x: 0.1, z: 2.2, w: 0.4, h: 1.3, d: 0.4 },
+          { x: 0.6, z: 1.4, w: 0.2, h: 0.9, d: 0.25 },
+          { x: 0.9, z: 2.3, w: 0.25, h: 1.1, d: 0.2 },
+        ]
+      },
+      {
+        id: 'MF', name: 'Mayfair', label: 'West End',
+        pos: [-2.0, 0, -0.3], color: 0xF5A623,
+        desc: 'Ultra-prime residential portfolio in London\'s most prestigious neighbourhood.',
+        units: 84, value: '\u00A33.8M', yield: '2.9%',
+        buildings: [
+          { x: -2.2, z: -0.5, w: 0.45, h: 1.4, d: 0.45 },
+          { x: -1.7, z: -0.1, w: 0.4, h: 1.7, d: 0.4 },
+          { x: -2.4, z: 0.1, w: 0.35, h: 1.2, d: 0.5 },
+          { x: -1.9, z: -0.6, w: 0.2, h: 0.8, d: 0.3 },
+          { x: -2.1, z: 0.3, w: 0.25, h: 1.0, d: 0.25 },
+        ]
+      },
+      {
+        id: 'SH', name: 'Shoreditch', label: 'East London',
+        pos: [1.8, 0, -1.5], color: 0xEF5B7C,
+        desc: 'Creative quarter with converted warehouses and design-led new-builds.',
+        units: 197, value: '\u00A3720K', yield: '4.5%',
+        buildings: [
+          { x: 1.6, z: -1.8, w: 0.5, h: 1.5, d: 0.4 },
+          { x: 2.1, z: -1.3, w: 0.35, h: 2.0, d: 0.35 },
+          { x: 1.5, z: -1.2, w: 0.4, h: 1.8, d: 0.3 },
+          { x: 1.9, z: -1.7, w: 0.2, h: 1.0, d: 0.25 },
+          { x: 1.4, z: -1.6, w: 0.25, h: 0.7, d: 0.2 },
+        ]
+      },
+      {
+        id: 'BT', name: 'Battersea', label: 'South West',
+        pos: [-1.5, 0, 2.0], color: 0x8BC34A,
+        desc: 'Riverside developments anchored by the Power Station regeneration project.',
+        units: 263, value: '\u00A3950K', yield: '3.7%',
+        buildings: [
+          { x: -1.7, z: 1.8, w: 0.5, h: 2.4, d: 0.5 },
+          { x: -1.2, z: 2.2, w: 0.4, h: 1.6, d: 0.4 },
+          { x: -1.8, z: 2.4, w: 0.35, h: 1.9, d: 0.35 },
+          { x: -1.4, z: 1.6, w: 0.2, h: 1.1, d: 0.25 },
+          { x: -1.1, z: 2.5, w: 0.25, h: 0.8, d: 0.2 },
+        ]
+      }
+    ];
+
+    let scene, camera, renderer, raycaster, mouse;
+    let buildingMeshes = [];
+    let districtGroups = {};
+    let hoveredDistrict = null;
+    let selectedDistrict = null;
+    let targetCamPos = new THREE.Vector3(8, 10, 8);
+    let targetLookAt = new THREE.Vector3(0, 0, 0);
+    let currentLookAt = new THREE.Vector3(0, 0, 0);
+    let isDragging = false;
+    let previousMousePosition = { x: 0, y: 0 };
+    let spherical = new THREE.Spherical(14, Math.PI / 4, Math.PI / 4);
+    let autoRotate = true;
+    let clock = new THREE.Clock();
+
+    function init() {
+      scene = new THREE.Scene();
+      scene.fog = new THREE.FogExp2(0xD6E0F0, 0.018);
+
+      camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 200);
+      camera.position.set(8, 10, 8);
+      camera.lookAt(0, 0, 0);
+
+      renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+      renderer.setSize(window.innerWidth, window.innerHeight);
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+      renderer.shadowMap.enabled = true;
+      renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+      renderer.toneMapping = THREE.ACESFilmicToneMapping;
+      renderer.toneMappingExposure = 1.1;
+      document.getElementById('canvas-container').appendChild(renderer.domElement);
+
+      raycaster = new THREE.Raycaster();
+      mouse = new THREE.Vector2();
+
+      createSky();
+      createLights();
+      createGround();
+      createGrid();
+      createCityFill();
+      createBackgroundRoads();
+      createRoads();
+      createDistricts();
+      createSidebarButtons();
+      setupEvents();
+
+      setTimeout(() => {
+        document.getElementById('loader').classList.add('hidden');
+      }, 1800);
+
+      animate();
+    }
+
+    function createSky() {
+      // Gradient sky dome
+      const skyGeo = new THREE.SphereGeometry(80, 32, 16);
+      const skyCanvas = document.createElement('canvas');
+      skyCanvas.width = 512; skyCanvas.height = 512;
+      const ctx = skyCanvas.getContext('2d');
+      const grad = ctx.createLinearGradient(0, 0, 0, 512);
+      grad.addColorStop(0, '#7BB3F0');
+      grad.addColorStop(0.3, '#A8CBF5');
+      grad.addColorStop(0.6, '#C8DDFB');
+      grad.addColorStop(1.0, '#E4EDF8');
+      ctx.fillStyle = grad;
+      ctx.fillRect(0, 0, 512, 512);
+      const skyTex = new THREE.CanvasTexture(skyCanvas);
+      const skyMat = new THREE.MeshBasicMaterial({ map: skyTex, side: THREE.BackSide });
+      const sky = new THREE.Mesh(skyGeo, skyMat);
+      scene.add(sky);
+
+      // Clouds using flat instanced circles
+      const cloudGeo = new THREE.PlaneGeometry(1, 1);
+      const cloudCanvas = document.createElement('canvas');
+      cloudCanvas.width = 128; cloudCanvas.height = 128;
+      const cctx = cloudCanvas.getContext('2d');
+      const cGrad = cctx.createRadialGradient(64, 64, 0, 64, 64, 64);
+      cGrad.addColorStop(0, 'rgba(255,255,255,0.6)');
+      cGrad.addColorStop(0.5, 'rgba(255,255,255,0.3)');
+      cGrad.addColorStop(1, 'rgba(255,255,255,0)');
+      cctx.fillStyle = cGrad;
+      cctx.fillRect(0, 0, 128, 128);
+      const cloudTex = new THREE.CanvasTexture(cloudCanvas);
+      const cloudMat = new THREE.MeshBasicMaterial({ map: cloudTex, transparent: true, depthWrite: false });
+
+      const cloudCount = 40;
+      const clouds = new THREE.InstancedMesh(cloudGeo, cloudMat, cloudCount);
+      const dummy = new THREE.Object3D();
+      for (let i = 0; i < cloudCount; i++) {
+        const angle = Math.random() * Math.PI * 2;
+        const radius = 10 + Math.random() * 40;
+        dummy.position.set(Math.cos(angle) * radius, 12 + Math.random() * 8, Math.sin(angle) * radius);
+        dummy.rotation.x = -Math.PI / 2;
+        const s = 3 + Math.random() * 6;
+        dummy.scale.set(s, s * (0.5 + Math.random() * 0.5), 1);
+        dummy.updateMatrix();
+        clouds.setMatrixAt(i, dummy.matrix);
+      }
+      clouds.instanceMatrix.needsUpdate = true;
+      clouds.userData.isCloud = true;
+      scene.add(clouds);
+    }
+
+    function createLights() {
+      const ambient = new THREE.AmbientLight(0xffffff, 0.5);
+      scene.add(ambient);
+
+      const dir = new THREE.DirectionalLight(0xffffff, 0.8);
+      dir.position.set(8, 15, 5);
+      dir.castShadow = true;
+      dir.shadow.mapSize.set(2048, 2048);
+      dir.shadow.camera.left = -12;
+      dir.shadow.camera.right = 12;
+      dir.shadow.camera.top = 12;
+      dir.shadow.camera.bottom = -12;
+      dir.shadow.camera.near = 0.5;
+      dir.shadow.camera.far = 40;
+      dir.shadow.bias = -0.0001;
+      scene.add(dir);
+
+      const fill = new THREE.DirectionalLight(0xA8C4F5, 0.3);
+      fill.position.set(-5, 8, -5);
+      scene.add(fill);
+
+      const hemi = new THREE.HemisphereLight(0xA8C4F5, 0xe8e0d4, 0.4);
+      scene.add(hemi);
+    }
+
+    function createGround() {
+      const groundGeo = new THREE.PlaneGeometry(120, 120);
+      const groundMat = new THREE.MeshStandardMaterial({ color: 0xE8EDF5, roughness: 0.9, metalness: 0.0 });
+      const ground = new THREE.Mesh(groundGeo, groundMat);
+      ground.rotation.x = -Math.PI / 2;
+      ground.position.y = -0.05;
+      ground.receiveShadow = true;
+      scene.add(ground);
+
+      const platformGeo = new THREE.CylinderGeometry(5.5, 6, 0.15, 64);
+      const platformMat = new THREE.MeshStandardMaterial({ color: 0xDDE3EE, roughness: 0.8 });
+      const platform = new THREE.Mesh(platformGeo, platformMat);
+      platform.position.y = -0.02;
+      platform.receiveShadow = true;
+      scene.add(platform);
+    }
+
+    function createThames() {
+      const curve = new THREE.CatmullRomCurve3([
+        new THREE.Vector3(-6, 0.02, 1.5),
+        new THREE.Vector3(-3, 0.02, 0.8),
+        new THREE.Vector3(-1, 0.02, 0.5),
+        new THREE.Vector3(0, 0.02, 0.7),
+        new THREE.Vector3(1.5, 0.02, 1.0),
+        new THREE.Vector3(3, 0.02, 0.3),
+        new THREE.Vector3(5, 0.02, 0.0),
+        new THREE.Vector3(7, 0.02, -0.5),
+      ]);
+
+      const tubeGeo = new THREE.TubeGeometry(curve, 80, 0.25, 8, false);
+      const riverMat = new THREE.MeshStandardMaterial({
+        color: 0x7BABF2, roughness: 0.3, metalness: 0.1, transparent: true, opacity: 0.6,
+      });
+      const river = new THREE.Mesh(tubeGeo, riverMat);
+      scene.add(river);
+    }
+
+    function createCityFill() {
+      const districtRadius = 1.2;
+      const cityExtent = 30;
+      const roadSpacing = 1.6;
+
+      function nearDistrict(x, z) {
+        for (const d of districts) {
+          const dx = x - d.pos[0], dz = z - d.pos[2];
+          if (dx * dx + dz * dz < districtRadius * districtRadius) return true;
+        }
+        return false;
+      }
+      function onRoad(x, z) {
+        // Keep buildings off the road grid
+        const mx = ((x % roadSpacing) + roadSpacing) % roadSpacing;
+        const mz = ((z % roadSpacing) + roadSpacing) % roadSpacing;
+        return mx < 0.15 || mz < 0.15;
+      }
+      function distFromCenter(x, z) { return Math.sqrt(x * x + z * z); }
+
+      const positions = [];
+      const parkPositions = [];
+
+      // Place parks at regular intervals
+      for (let px = -18; px <= 18; px += 6) {
+        for (let pz = -18; pz <= 18; pz += 6) {
+          if (nearDistrict(px, pz)) continue;
+          if (Math.random() < 0.6) continue; // not every spot
+          parkPositions.push({ x: px + (Math.random() - 0.5), z: pz + (Math.random() - 0.5), size: 0.4 + Math.random() * 0.5 });
+        }
+      }
+
+      function inPark(x, z) {
+        for (const p of parkPositions) {
+          const dx = x - p.x, dz = z - p.z;
+          if (dx * dx + dz * dz < p.size * p.size) return true;
+        }
+        return false;
+      }
+
+      // Dense inner city
+      for (let x = -10; x < 10; x += 0.25) {
+        for (let z = -10; z < 10; z += 0.25) {
+          if (nearDistrict(x, z) || onRoad(x, z) || inPark(x, z)) continue;
+          if (Math.random() < 0.12) continue;
+          const dist = distFromCenter(x, z);
+          const jx = x + (Math.random() - 0.5) * 0.1;
+          const jz = z + (Math.random() - 0.5) * 0.1;
+          const w = 0.08 + Math.random() * 0.15;
+          const d = 0.08 + Math.random() * 0.15;
+          const maxH = dist < 3 ? 1.4 : dist < 6 ? 1.0 : 0.7;
+          const h = 0.12 + Math.random() * maxH;
+          positions.push({ x: jx, z: jz, w, h, d, dist });
+        }
+      }
+
+      // Outer sprawl
+      for (let x = -cityExtent; x < cityExtent; x += 0.38) {
+        for (let z = -cityExtent; z < cityExtent; z += 0.38) {
+          if (Math.abs(x) < 10 && Math.abs(z) < 10) continue;
+          if (onRoad(x, z) || inPark(x, z)) continue;
+          if (Math.random() < 0.18) continue;
+          const dist = distFromCenter(x, z);
+          const jx = x + (Math.random() - 0.5) * 0.15;
+          const jz = z + (Math.random() - 0.5) * 0.15;
+          const w = 0.1 + Math.random() * 0.18;
+          const d = 0.1 + Math.random() * 0.18;
+          const maxH = dist < 14 ? 0.55 : 0.35;
+          const h = 0.08 + Math.random() * maxH;
+          positions.push({ x: jx, z: jz, w, h, d, dist });
+        }
+      }
+
+      // Higher-res window texture for background buildings
+      function makeBuildingTex(baseR, baseG, baseB) {
+        const c = document.createElement('canvas');
+        c.width = 64; c.height = 128;
+        const ctx = c.getContext('2d');
+        // Base wall
+        ctx.fillStyle = `rgb(${baseR},${baseG},${baseB})`;
+        ctx.fillRect(0, 0, 64, 128);
+        // Floor separators
+        for (let r = 0; r < 16; r++) {
+          ctx.fillStyle = `rgba(${Math.max(0,baseR-30)},${Math.max(0,baseG-30)},${Math.max(0,baseB-25)},0.4)`;
+          ctx.fillRect(0, r * 8, 64, 1);
+        }
+        // Windows with frames
+        for (let r = 0; r < 16; r++) {
+          for (let col = 0; col < 8; col++) {
+            const lit = Math.random() > 0.35;
+            // Frame
+            ctx.fillStyle = `rgba(${Math.max(0,baseR-40)},${Math.max(0,baseG-40)},${Math.max(0,baseB-35)},0.5)`;
+            ctx.fillRect(col * 8 + 1, r * 8 + 1, 6, 6);
+            // Glass
+            if (lit) {
+              const warmth = Math.random();
+              if (warmth > 0.7) {
+                ctx.fillStyle = 'rgba(255,240,200,0.7)'; // warm lit
+              } else {
+                ctx.fillStyle = 'rgba(200,220,250,0.8)'; // cool lit
+              }
+            } else {
+              ctx.fillStyle = `rgba(${Math.max(0,baseR-25)},${Math.max(0,baseG-25)},${Math.max(0,baseB-20)},0.7)`;
+            }
+            ctx.fillRect(col * 8 + 2, r * 8 + 2, 4, 4);
+          }
+        }
+        const t = new THREE.CanvasTexture(c);
+        t.minFilter = THREE.LinearFilter;
+        return t;
+      }
+
+      const categories = [
+        { filter: p => p.dist < 4, r: 170, g: 178, b: 192 },
+        { filter: p => p.dist >= 4 && p.dist < 8, r: 182, g: 188, b: 200 },
+        { filter: p => p.dist >= 8 && p.dist < 15, r: 195, g: 200, b: 210 },
+        { filter: p => p.dist >= 15, r: 208, g: 212, b: 220 },
+      ];
+
+      categories.forEach(cat => {
+        const filtered = positions.filter(cat.filter);
+        if (filtered.length === 0) return;
+
+        const tex = makeBuildingTex(cat.r, cat.g, cat.b);
+        const geo = new THREE.BoxGeometry(1, 1, 1);
+        const mat = new THREE.MeshStandardMaterial({ map: tex, roughness: 0.75, metalness: 0.08 });
+        const instanced = new THREE.InstancedMesh(geo, mat, filtered.length);
+        instanced.castShadow = false;
+        instanced.receiveShadow = true;
+
+        const dummy = new THREE.Object3D();
+        filtered.forEach((p, i) => {
+          dummy.position.set(p.x, p.h / 2, p.z);
+          dummy.scale.set(p.w, p.h, p.d);
+          dummy.updateMatrix();
+          instanced.setMatrixAt(i, dummy.matrix);
+        });
+        instanced.instanceMatrix.needsUpdate = true;
+        scene.add(instanced);
+      });
+
+      // Rooftop details on taller buildings — AC units, penthouses
+      const tallOnes = positions.filter(p => p.h > 0.4 && p.dist < 15);
+      if (tallOnes.length > 0) {
+        // Rooftop equipment
+        const roofGeo = new THREE.BoxGeometry(1, 1, 1);
+        const roofMat = new THREE.MeshStandardMaterial({ color: 0xc8ccd4, roughness: 0.7 });
+        const roofInst = new THREE.InstancedMesh(roofGeo, roofMat, tallOnes.length);
+        const dm = new THREE.Object3D();
+        tallOnes.forEach((p, i) => {
+          dm.position.set(p.x, p.h + 0.03, p.z);
+          dm.scale.set(p.w * 0.4, 0.06, p.d * 0.4);
+          dm.updateMatrix();
+          roofInst.setMatrixAt(i, dm.matrix);
+        });
+        roofInst.instanceMatrix.needsUpdate = true;
+        scene.add(roofInst);
+
+        // Second rooftop element (antenna/vent) on very tall ones
+        const veryTall = tallOnes.filter(p => p.h > 0.7);
+        if (veryTall.length > 0) {
+          const antGeo = new THREE.CylinderGeometry(0.005, 0.005, 0.1, 3);
+          const antMat = new THREE.MeshStandardMaterial({ color: 0xaaaaaa });
+          const antInst = new THREE.InstancedMesh(antGeo, antMat, veryTall.length);
+          veryTall.forEach((p, i) => {
+            dm.position.set(p.x, p.h + 0.11, p.z);
+            dm.scale.set(1, 1, 1);
+            dm.updateMatrix();
+            antInst.setMatrixAt(i, dm.matrix);
+          });
+          antInst.instanceMatrix.needsUpdate = true;
+          scene.add(antInst);
+        }
+      }
+
+      // Plazas (replacing parks) — grey open spaces with small buildings
+      const plazaGroundGeo = new THREE.CircleGeometry(1, 16);
+      const plazaGroundMat = new THREE.MeshStandardMaterial({ color: 0xCDD1D9, roughness: 0.9 });
+
+      let plazaBuildings = [];
+      parkPositions.forEach(p => {
+        const ground = new THREE.Mesh(plazaGroundGeo, plazaGroundMat);
+        ground.rotation.x = -Math.PI / 2;
+        ground.position.set(p.x, 0.018, p.z);
+        ground.scale.setScalar(p.size);
+        scene.add(ground);
+
+        // Small buildings/structures in the plaza
+        const count = 2 + Math.floor(Math.random() * 3);
+        for (let i = 0; i < count; i++) {
+          const angle = Math.random() * Math.PI * 2;
+          const r = Math.random() * p.size * 0.5;
+          const bh = 0.08 + Math.random() * 0.2;
+          plazaBuildings.push({
+            x: p.x + Math.cos(angle) * r,
+            z: p.z + Math.sin(angle) * r,
+            w: 0.06 + Math.random() * 0.08,
+            h: bh,
+            d: 0.06 + Math.random() * 0.08,
+          });
+        }
+      });
+
+      // Instanced plaza buildings
+      if (plazaBuildings.length > 0) {
+        const plazaTex = makeBuildingTex(190, 195, 205);
+        const pbGeo = new THREE.BoxGeometry(1, 1, 1);
+        const pbMat = new THREE.MeshStandardMaterial({ map: plazaTex, roughness: 0.8, metalness: 0.05 });
+        const pbInst = new THREE.InstancedMesh(pbGeo, pbMat, plazaBuildings.length);
+        const dm = new THREE.Object3D();
+        plazaBuildings.forEach((b, i) => {
+          dm.position.set(b.x, b.h / 2, b.z);
+          dm.scale.set(b.w, b.h, b.d);
+          dm.updateMatrix();
+          pbInst.setMatrixAt(i, dm.matrix);
+        });
+        pbInst.instanceMatrix.needsUpdate = true;
+        scene.add(pbInst);
+      }
+    }
+
+    function createBackgroundRoads() {
+      const extent = 28;
+      const roadSpacing = 1.6;
+      const roadWidth = 0.13;
+
+      // Road surfaces
+      const roadMat = new THREE.MeshStandardMaterial({ color: 0x626270, roughness: 0.95 });
+      const roads = [];
+      for (let z = -extent; z <= extent; z += roadSpacing) {
+        roads.push({ x: 0, z, sx: extent * 2, sz: roadWidth });
+      }
+      for (let x = -extent; x <= extent; x += roadSpacing) {
+        roads.push({ x, z: 0, sx: roadWidth, sz: extent * 2 });
+      }
+
+      const geo = new THREE.PlaneGeometry(1, 1);
+      const roadInst = new THREE.InstancedMesh(geo, roadMat, roads.length);
+      const dummy = new THREE.Object3D();
+      roads.forEach((r, i) => {
+        dummy.position.set(r.x, 0.016, r.z);
+        dummy.rotation.x = -Math.PI / 2;
+        dummy.rotation.z = 0;
+        dummy.scale.set(r.sx, r.sz, 1);
+        dummy.updateMatrix();
+        roadInst.setMatrixAt(i, dummy.matrix);
+      });
+      roadInst.instanceMatrix.needsUpdate = true;
+      scene.add(roadInst);
+
+      // Pavement edges along roads
+      const paveMat = new THREE.MeshStandardMaterial({ color: 0xb8bcc4, roughness: 0.9 });
+      const paveItems = [];
+      for (let z = -extent; z <= extent; z += roadSpacing) {
+        paveItems.push({ x: 0, z: z - roadWidth/2 - 0.025, sx: extent * 2, sz: 0.04 });
+        paveItems.push({ x: 0, z: z + roadWidth/2 + 0.025, sx: extent * 2, sz: 0.04 });
+      }
+      for (let x = -extent; x <= extent; x += roadSpacing) {
+        paveItems.push({ x: x - roadWidth/2 - 0.025, z: 0, sx: 0.04, sz: extent * 2 });
+        paveItems.push({ x: x + roadWidth/2 + 0.025, z: 0, sx: 0.04, sz: extent * 2 });
+      }
+      const paveInst = new THREE.InstancedMesh(geo, paveMat, paveItems.length);
+      paveItems.forEach((p, i) => {
+        dummy.position.set(p.x, 0.02, p.z);
+        dummy.rotation.x = -Math.PI / 2;
+        dummy.scale.set(p.sx, p.sz, 1);
+        dummy.updateMatrix();
+        paveInst.setMatrixAt(i, dummy.matrix);
+      });
+      paveInst.instanceMatrix.needsUpdate = true;
+      scene.add(paveInst);
+
+      // Street lamps at intersections (instanced)
+      const lampPole = new THREE.CylinderGeometry(0.008, 0.012, 0.3, 4);
+      const lampHead = new THREE.SphereGeometry(0.02, 6, 5);
+      const poleMat = new THREE.MeshStandardMaterial({ color: 0x5a5a5a, roughness: 0.6 });
+      const headMat = new THREE.MeshStandardMaterial({ color: 0xFFF8E1, emissive: 0xFFF176, emissiveIntensity: 0.6, roughness: 0.2 });
+
+      const lampPositions = [];
+      for (let x = -extent; x <= extent; x += roadSpacing) {
+        for (let z = -extent; z <= extent; z += roadSpacing) {
+          if (Math.random() < 0.3) continue; // skip some
+          lampPositions.push({ x: x + 0.1, z: z + 0.1 });
+        }
+      }
+
+      if (lampPositions.length > 0) {
+        const poleInst = new THREE.InstancedMesh(lampPole, poleMat, lampPositions.length);
+        const headInst = new THREE.InstancedMesh(lampHead, headMat, lampPositions.length);
+        lampPositions.forEach((l, i) => {
+          dummy.position.set(l.x, 0.15, l.z); dummy.scale.set(1,1,1); dummy.rotation.set(0,0,0); dummy.updateMatrix();
+          poleInst.setMatrixAt(i, dummy.matrix);
+          dummy.position.set(l.x, 0.31, l.z); dummy.updateMatrix();
+          headInst.setMatrixAt(i, dummy.matrix);
+        });
+        poleInst.instanceMatrix.needsUpdate = true;
+        headInst.instanceMatrix.needsUpdate = true;
+        scene.add(poleInst);
+        scene.add(headInst);
+      }
+    }
+
+    function createGrid() {
+      const gridSize = 12;
+      const divisions = 12;
+      const gridMat = new THREE.LineBasicMaterial({ color: 0xCCD3E0, transparent: true, opacity: 0.3 });
+
+      for (let i = -gridSize / 2; i <= gridSize / 2; i += gridSize / divisions) {
+        const geo = new THREE.BufferGeometry().setFromPoints([
+          new THREE.Vector3(i, 0.01, -gridSize / 2),
+          new THREE.Vector3(i, 0.01, gridSize / 2)
+        ]);
+        scene.add(new THREE.Line(geo, gridMat));
+
+        const geo2 = new THREE.BufferGeometry().setFromPoints([
+          new THREE.Vector3(-gridSize / 2, 0.01, i),
+          new THREE.Vector3(gridSize / 2, 0.01, i)
+        ]);
+        scene.add(new THREE.Line(geo2, gridMat));
+      }
+    }
+
+    // Building style types
+    const STYLE_MODERN = 0, STYLE_CLASSIC = 1, STYLE_STEPPED = 2, STYLE_TOWER = 3;
+
+    // Generate a window grid texture on a canvas (1 texture per building face, not hundreds of meshes)
+    const _winTexCache = {};
+    function getWindowTexture(cols, rows, baseColor) {
+      const key = `${cols}_${rows}_${baseColor}`;
+      if (_winTexCache[key]) return _winTexCache[key];
+      const cw = cols * 16, ch = rows * 16;
+      const canvas = document.createElement('canvas');
+      canvas.width = cw; canvas.height = ch;
+      const ctx = canvas.getContext('2d');
+      // Base color
+      const c = new THREE.Color(baseColor);
+      ctx.fillStyle = `rgb(${c.r*255|0},${c.g*255|0},${c.b*255|0})`;
+      ctx.fillRect(0, 0, cw, ch);
+      // Windows
+      const winW = 8, winH = 10, padX = (16 - winW) / 2, padY = (16 - winH) / 2;
+      for (let r = 0; r < rows; r++) {
+        for (let col = 0; col < cols; col++) {
+          const lit = Math.random() > 0.3;
+          ctx.fillStyle = lit ? 'rgba(200,225,255,0.85)' : 'rgba(120,140,170,0.5)';
+          ctx.fillRect(col * 16 + padX, r * 16 + padY, winW, winH);
+          // Frame
+          ctx.strokeStyle = 'rgba(60,60,80,0.4)';
+          ctx.lineWidth = 0.5;
+          ctx.strokeRect(col * 16 + padX, r * 16 + padY, winW, winH);
+        }
+      }
+      const tex = new THREE.CanvasTexture(canvas);
+      tex.minFilter = THREE.LinearFilter;
+      _winTexCache[key] = tex;
+      return tex;
+    }
+
+    // Shared materials to reduce draw calls
+    const _sharedMats = {
+      white: new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.6, metalness: 0.1 }),
+      cornice: new THREE.MeshStandardMaterial({ color: 0xe0d5c5, roughness: 0.8 }),
+      plinth: new THREE.MeshStandardMaterial({ color: 0x8a8078, roughness: 0.9 }),
+      door: new THREE.MeshStandardMaterial({ color: 0x4a3a2a, roughness: 0.9 }),
+      antenna: new THREE.MeshStandardMaterial({ color: 0xcccccc }),
+      balcony: new THREE.MeshStandardMaterial({ color: 0xd0d0d0, roughness: 0.5 }),
+      floorLine: new THREE.MeshStandardMaterial({ color: 0xffffff, transparent: true, opacity: 0.3, roughness: 0.2, metalness: 0.5 }),
+    };
+
+    function createBuildingFace(group, faceW, h, offset, rotation, cols, rows, baseColor) {
+      const tex = getWindowTexture(cols, rows, baseColor);
+      const mat = new THREE.MeshStandardMaterial({ map: tex, roughness: 0.5, metalness: 0.1 });
+      const face = new THREE.Mesh(new THREE.PlaneGeometry(faceW, h), mat);
+      face.position.copy(offset);
+      face.position.y = h / 2;
+      face.rotation.y = rotation;
+      group.add(face);
+    }
+
+    function createBuilding(x, z, w, h, d, color, distGroup) {
+      const group = new THREE.Group();
+      const style = Math.floor(Math.random() * 4);
+      const darkerColor = new THREE.Color(color).multiplyScalar(0.85).getHex();
+      const lighterColor = new THREE.Color(color).lerp(new THREE.Color(0xffffff), 0.3).getHex();
+      const colsW = Math.max(2, Math.round(w / 0.08));
+      const colsD = Math.max(2, Math.round(d / 0.08));
+      const rows = Math.max(2, Math.round(h / 0.12));
+
+      if (style === STYLE_STEPPED) {
+        const h1 = h * 0.65, h2 = h * 0.35;
+        const mesh1 = new THREE.Mesh(new THREE.BoxGeometry(w, h1, d),
+          new THREE.MeshStandardMaterial({ color, roughness: 0.5, metalness: 0.15, transparent: true, opacity: 0.9 }));
+        mesh1.position.set(0, h1/2, 0); mesh1.castShadow = true; mesh1.receiveShadow = true;
+        group.add(mesh1); buildingMeshes.push(mesh1);
+
+        const mesh2 = new THREE.Mesh(new THREE.BoxGeometry(w * 0.7, h2, d * 0.7),
+          new THREE.MeshStandardMaterial({ color: lighterColor, roughness: 0.4, metalness: 0.2, transparent: true, opacity: 0.9 }));
+        mesh2.position.set(0, h1 + h2/2, 0); mesh2.castShadow = true;
+        group.add(mesh2);
+
+        // Window faces on lower section
+        const r1 = Math.max(2, Math.round(h1 / 0.12));
+        createBuildingFace(group, w, h1, new THREE.Vector3(0, 0, d/2 + 0.002), 0, colsW, r1, color);
+        createBuildingFace(group, w, h1, new THREE.Vector3(0, 0, -d/2 - 0.002), Math.PI, colsW, r1, color);
+
+      } else if (style === STYLE_TOWER) {
+        const mesh = new THREE.Mesh(new THREE.CylinderGeometry(w/2, w/2 * 1.05, h, 12),
+          new THREE.MeshStandardMaterial({ color, roughness: 0.3, metalness: 0.3, transparent: true, opacity: 0.85 }));
+        mesh.position.set(0, h/2, 0); mesh.castShadow = true; mesh.receiveShadow = true;
+        group.add(mesh); buildingMeshes.push(mesh);
+
+        // 3 floor lines instead of one per 0.25
+        const lineCount = Math.min(4, Math.floor(h / 0.5));
+        for (let i = 0; i < lineCount; i++) {
+          const ring = new THREE.Mesh(
+            new THREE.TorusGeometry(w/2 + 0.005, 0.008, 3, 12),
+            _sharedMats.floorLine
+          );
+          ring.position.set(0, h * (i + 1) / (lineCount + 1), 0);
+          ring.rotation.x = Math.PI / 2;
+          group.add(ring);
+        }
+
+        const antenna = new THREE.Mesh(new THREE.CylinderGeometry(0.008, 0.008, 0.3, 4), _sharedMats.antenna);
+        antenna.position.set(0, h + 0.15, 0);
+        group.add(antenna);
+
+      } else if (style === STYLE_CLASSIC) {
+        const mesh = new THREE.Mesh(new THREE.BoxGeometry(w, h, d),
+          new THREE.MeshStandardMaterial({ color: darkerColor, roughness: 0.7, metalness: 0.05, transparent: true, opacity: 0.9 }));
+        mesh.position.set(0, h/2, 0); mesh.castShadow = true; mesh.receiveShadow = true;
+        group.add(mesh); buildingMeshes.push(mesh);
+
+        const cornice = new THREE.Mesh(new THREE.BoxGeometry(w + 0.04, 0.04, d + 0.04), _sharedMats.cornice);
+        cornice.position.set(0, h + 0.02, 0); group.add(cornice);
+
+        const plinth = new THREE.Mesh(new THREE.BoxGeometry(w + 0.03, 0.06, d + 0.03), _sharedMats.plinth);
+        plinth.position.set(0, 0.03, 0); group.add(plinth);
+
+        // Window faces
+        createBuildingFace(group, w, h, new THREE.Vector3(0, 0, d/2 + 0.002), 0, colsW, rows, darkerColor);
+        createBuildingFace(group, w, h, new THREE.Vector3(0, 0, -d/2 - 0.002), Math.PI, colsW, rows, darkerColor);
+        createBuildingFace(group, d, h, new THREE.Vector3(w/2 + 0.002, 0, 0), Math.PI/2, colsD, rows, darkerColor);
+
+        const door = new THREE.Mesh(new THREE.PlaneGeometry(0.06, 0.12), _sharedMats.door);
+        door.position.set(0, 0.06, d/2 + 0.003); group.add(door);
+
+      } else {
+        // Modern glass
+        const mesh = new THREE.Mesh(new THREE.BoxGeometry(w, h, d),
+          new THREE.MeshStandardMaterial({ color, roughness: 0.3, metalness: 0.25, transparent: true, opacity: 0.85 }));
+        mesh.position.set(0, h/2, 0); mesh.castShadow = true; mesh.receiveShadow = true;
+        group.add(mesh); buildingMeshes.push(mesh);
+
+        // Window faces
+        createBuildingFace(group, w, h, new THREE.Vector3(0, 0, d/2 + 0.002), 0, colsW, rows, color);
+        createBuildingFace(group, w, h, new THREE.Vector3(0, 0, -d/2 - 0.002), Math.PI, colsW, rows, color);
+        createBuildingFace(group, d, h, new THREE.Vector3(w/2 + 0.002, 0, 0), Math.PI/2, colsD, rows, color);
+        createBuildingFace(group, d, h, new THREE.Vector3(-w/2 - 0.002, 0, 0), -Math.PI/2, colsD, rows, color);
+
+        const roof = new THREE.Mesh(new THREE.BoxGeometry(w * 0.4, 0.12, d * 0.4), _sharedMats.white);
+        roof.position.set(0, h + 0.06, 0); roof.castShadow = true; group.add(roof);
+
+        // Balconies (max 3)
+        if (Math.random() > 0.5) {
+          const count = Math.min(3, Math.floor(h / 0.5));
+          for (let i = 0; i < count; i++) {
+            const balcony = new THREE.Mesh(new THREE.BoxGeometry(w * 0.8, 0.015, 0.06), _sharedMats.balcony);
+            balcony.position.set(0, 0.35 + i * 0.5, d/2 + 0.03);
+            group.add(balcony);
+          }
+        }
+      }
+
+      group.position.set(x, 0, z);
+      group.userData.originalY = 0;
+      distGroup.add(group);
+      return group;
+    }
+
+    // Shared tree materials
+    const _treeMats = {
+      trunk: new THREE.MeshStandardMaterial({ color: 0x6B4E3D }),
+      deciduous: new THREE.MeshStandardMaterial({ color: 0x5DAE3B, roughness: 0.85 }),
+      evergreen: new THREE.MeshStandardMaterial({ color: 0x2E7D32, roughness: 0.9 }),
+    };
+    // Shared tree geometries
+    const _treeGeo = {
+      trunk: new THREE.CylinderGeometry(0.015, 0.025, 0.18, 5),
+      canopy: new THREE.SphereGeometry(0.1, 6, 5),
+      coneTrunk: new THREE.CylinderGeometry(0.01, 0.02, 0.1, 5),
+      cone: new THREE.ConeGeometry(0.07, 0.2, 6),
+    };
+
+    function createGreenery(x, z, distGroup) {
+      const type = Math.random() > 0.5 ? 0 : 1;
+      const s = 0.7 + Math.random() * 0.5;
+
+      if (type === 0) {
+        const trunk = new THREE.Mesh(_treeGeo.trunk, _treeMats.trunk);
+        trunk.position.set(x, 0.09 * s, z); trunk.scale.setScalar(s);
+        distGroup.add(trunk);
+        const canopy = new THREE.Mesh(_treeGeo.canopy, _treeMats.deciduous);
+        canopy.position.set(x, 0.22 * s, z); canopy.scale.setScalar(s);
+        canopy.castShadow = true;
+        distGroup.add(canopy);
+      } else {
+        const trunk = new THREE.Mesh(_treeGeo.coneTrunk, _treeMats.trunk);
+        trunk.position.set(x, 0.05 * s, z); trunk.scale.setScalar(s);
+        distGroup.add(trunk);
+        const cone = new THREE.Mesh(_treeGeo.cone, _treeMats.evergreen);
+        cone.position.set(x, 0.2 * s, z); cone.scale.setScalar(s);
+        cone.castShadow = true;
+        distGroup.add(cone);
+      }
+    }
+
+    function createStreetLamp(x, z, parent) {
+      const group = new THREE.Group();
+      // Pole
+      const pole = new THREE.Mesh(
+        new THREE.CylinderGeometry(0.01, 0.015, 0.35, 6),
+        new THREE.MeshStandardMaterial({ color: 0x4a4a4a, roughness: 0.6, metalness: 0.4 })
+      );
+      pole.position.set(0, 0.175, 0);
+      pole.castShadow = true;
+      group.add(pole);
+
+      // Arm
+      const arm = new THREE.Mesh(
+        new THREE.BoxGeometry(0.12, 0.01, 0.01),
+        new THREE.MeshStandardMaterial({ color: 0x4a4a4a, roughness: 0.6, metalness: 0.4 })
+      );
+      arm.position.set(0.06, 0.35, 0);
+      group.add(arm);
+
+      // Lamp head
+      const lamp = new THREE.Mesh(
+        new THREE.SphereGeometry(0.025, 8, 6),
+        new THREE.MeshStandardMaterial({ color: 0xFFF8E1, emissive: 0xFFF176, emissiveIntensity: 0.8, roughness: 0.2 })
+      );
+      lamp.position.set(0.12, 0.35, 0);
+      group.add(lamp);
+
+      // Glow effect without expensive point light
+
+
+      group.position.set(x, 0, z);
+      parent.add(group);
+    }
+
+    function createTrafficLight(x, z, rotation, parent) {
+      const group = new THREE.Group();
+      // Pole
+      const pole = new THREE.Mesh(
+        new THREE.CylinderGeometry(0.008, 0.012, 0.3, 6),
+        new THREE.MeshStandardMaterial({ color: 0x3a3a3a, metalness: 0.5 })
+      );
+      pole.position.set(0, 0.15, 0);
+      group.add(pole);
+
+      // Housing
+      const housing = new THREE.Mesh(
+        new THREE.BoxGeometry(0.03, 0.08, 0.025),
+        new THREE.MeshStandardMaterial({ color: 0x2a2a2a, roughness: 0.8 })
+      );
+      housing.position.set(0, 0.34, 0);
+      group.add(housing);
+
+      // Lights (red, amber, green)
+      const colors = [0xFF1744, 0xFFAB00, 0x00E676];
+      colors.forEach((c, i) => {
+        const bulb = new THREE.Mesh(
+          new THREE.SphereGeometry(0.008, 8, 6),
+          new THREE.MeshStandardMaterial({ color: c, emissive: c, emissiveIntensity: i === 2 ? 0.8 : 0.2, roughness: 0.2 })
+        );
+        bulb.position.set(0, 0.365 - i * 0.025, 0.014);
+        group.add(bulb);
+      });
+
+      group.position.set(x, 0, z);
+      group.rotation.y = rotation;
+      parent.add(group);
+    }
+
+    function createRoadSegment(x1, z1, x2, z2, width, parent) {
+      const dx = x2 - x1, dz = z2 - z1;
+      const len = Math.sqrt(dx * dx + dz * dz);
+      if (len < 0.05) return;
+      const angle = Math.atan2(dx, dz);
+
+      // Road surface
+      const road = new THREE.Mesh(
+        new THREE.PlaneGeometry(width, len),
+        new THREE.MeshStandardMaterial({ color: 0x5a5a6a, roughness: 0.95, metalness: 0 })
+      );
+      road.rotation.x = -Math.PI / 2;
+      road.rotation.z = -angle;
+      road.position.set((x1 + x2) / 2, 0.02, (z1 + z2) / 2);
+      parent.add(road);
+
+      // Dashed center line
+      const dashCount = Math.max(1, Math.floor(len / 0.12));
+      for (let i = 0; i < dashCount; i++) {
+        const t = (i + 0.5) / dashCount;
+        if (i % 2 === 0) {
+          const dash = new THREE.Mesh(
+            new THREE.PlaneGeometry(0.012, 0.05),
+            new THREE.MeshStandardMaterial({ color: 0xdddddd, roughness: 0.8 })
+          );
+          dash.rotation.x = -Math.PI / 2;
+          dash.rotation.z = -angle;
+          dash.position.set(x1 + dx * t, 0.025, z1 + dz * t);
+          parent.add(dash);
+        }
+      }
+
+      // Kerb/pavement edges
+      const hw = width / 2 + 0.01;
+      for (let side = -1; side <= 1; side += 2) {
+        const perpX = -dz / len * hw * side;
+        const perpZ = dx / len * hw * side;
+        // Pavement strip
+        const pavement = new THREE.Mesh(
+          new THREE.PlaneGeometry(0.06, len),
+          new THREE.MeshStandardMaterial({ color: 0xc8cad0, roughness: 0.9 })
+        );
+        pavement.rotation.x = -Math.PI / 2;
+        pavement.rotation.z = -angle;
+        pavement.position.set((x1 + x2) / 2 + perpX + (-dz / len * 0.03 * side), 0.022, (z1 + z2) / 2 + perpZ + (dx / len * 0.03 * side));
+        parent.add(pavement);
+
+        // Kerb
+        const kerb = new THREE.Mesh(
+          new THREE.BoxGeometry(0.015, 0.025, len),
+          new THREE.MeshStandardMaterial({ color: 0xa0a0a8, roughness: 0.8 })
+        );
+        kerb.rotation.y = angle;
+        kerb.position.set((x1 + x2) / 2 + perpX, 0.032, (z1 + z2) / 2 + perpZ);
+        parent.add(kerb);
+      }
+    }
+
+    function createLocalStreets(d, parent) {
+      const cx = d.pos[0], cz = d.pos[2];
+      const buildings = d.buildings;
+      if (buildings.length < 2) return;
+
+      // Sort buildings by x then z to create a grid of streets between them
+      const sortedX = [...buildings].sort((a, b) => a.x - b.x);
+      const sortedZ = [...buildings].sort((a, b) => a.z - b.z);
+
+      const minX = sortedX[0].x - 0.35;
+      const maxX = sortedX[sortedX.length - 1].x + 0.35;
+      const minZ = sortedZ[0].z - 0.35;
+      const maxZ = sortedZ[sortedZ.length - 1].z + 0.35;
+      const midX = (minX + maxX) / 2;
+      const midZ = (minZ + maxZ) / 2;
+
+      // Horizontal street through district
+      createRoadSegment(minX, midZ, maxX, midZ, 0.12, parent);
+      // Vertical street through district
+      createRoadSegment(midX, minZ, midX, maxZ, 0.12, parent);
+
+      // Add street lamps along local streets
+      const hLen = maxX - minX;
+      const vLen = maxZ - minZ;
+      for (let i = 0; i < 3; i++) {
+        const t = (i + 1) / 4;
+        createStreetLamp(minX + hLen * t + 0.08, midZ + 0.1, parent);
+        createStreetLamp(midX + 0.1, minZ + vLen * t + 0.08, parent);
+      }
+
+      // Traffic light at the intersection
+      createTrafficLight(midX + 0.1, midZ + 0.1, 0, parent);
+
+      // Store edge points for inter-district connections
+      d._edges = {
+        top: { x: midX, z: minZ },
+        bottom: { x: midX, z: maxZ },
+        left: { x: minX, z: midZ },
+        right: { x: maxX, z: midZ },
+      };
+    }
+
+    function createConnectingRoad(da, db, parent) {
+      if (!da._edges || !db._edges) return;
+
+      // Find the closest pair of edge points between two districts
+      const edgesA = Object.values(da._edges);
+      const edgesB = Object.values(db._edges);
+      let bestDist = Infinity, bestA = null, bestB = null;
+      for (const ea of edgesA) {
+        for (const eb of edgesB) {
+          const dist = Math.sqrt(Math.pow(ea.x - eb.x, 2) + Math.pow(ea.z - eb.z, 2));
+          if (dist < bestDist) { bestDist = dist; bestA = ea; bestB = eb; }
+        }
+      }
+      if (!bestA || !bestB) return;
+
+      // Route with a midpoint so roads aren't perfectly straight
+      const mx = (bestA.x + bestB.x) / 2 + (Math.random() - 0.5) * 0.3;
+      const mz = (bestA.z + bestB.z) / 2 + (Math.random() - 0.5) * 0.3;
+
+      createRoadSegment(bestA.x, bestA.z, mx, mz, 0.1, parent);
+      createRoadSegment(mx, mz, bestB.x, bestB.z, 0.1, parent);
+
+      // Lamps along connecting road
+      const segments = [[bestA.x, bestA.z, mx, mz], [mx, mz, bestB.x, bestB.z]];
+      segments.forEach(([ax, az, bx, bz]) => {
+        const dx = bx - ax, dz = bz - az;
+        const len = Math.sqrt(dx * dx + dz * dz);
+        const steps = Math.max(1, Math.floor(len / 0.6));
+        for (let i = 1; i < steps; i++) {
+          const t = i / steps;
+          const perpX = -dz / len * 0.1;
+          const perpZ = dx / len * 0.1;
+          createStreetLamp(ax + dx * t + perpX, az + dz * t + perpZ, parent);
+        }
+      });
+    }
+
+    function createRoads() {
+      const roadGroup = new THREE.Group();
+
+      // Create local street grids within each district
+      districts.forEach(d => createLocalStreets(d, roadGroup));
+
+      // Connect districts with roads between their edges
+      const connections = [
+        ['KX', 'SH'], ['SH', 'CW'], ['CW', 'SW'], ['SW', 'BT'],
+        ['BT', 'MF'], ['MF', 'KX'],
+      ];
+      connections.forEach(([a, b]) => {
+        const da = districts.find(d => d.id === a);
+        const db = districts.find(d => d.id === b);
+        if (da && db) createConnectingRoad(da, db, roadGroup);
+      });
+
+      scene.add(roadGroup);
+    }
+
+    function createDistricts() {
+      districts.forEach(d => {
+        const group = new THREE.Group();
+        districtGroups[d.id] = group;
+
+        const baseGeo = new THREE.CylinderGeometry(0.9, 1.0, 0.08, 32);
+        const baseMat = new THREE.MeshStandardMaterial({ color: d.color, roughness: 0.7, transparent: true, opacity: 0.25 });
+        const base = new THREE.Mesh(baseGeo, baseMat);
+        base.position.set(d.pos[0], 0.04, d.pos[2]);
+        base.receiveShadow = true;
+        base.userData.districtId = d.id;
+        group.add(base);
+        buildingMeshes.push(base);
+
+        d.buildings.forEach(b => { createBuilding(b.x, b.z, b.w, b.h, b.d, d.color, group); });
+
+        // Trees around each district
+        const treeCount = 4;
+        for (let i = 0; i < treeCount; i++) {
+          const angle = (i / treeCount) * Math.PI * 2 + Math.random() * 0.5;
+          const radius = 0.5 + Math.random() * 0.4;
+          const tx = d.pos[0] + Math.cos(angle) * radius;
+          const tz = d.pos[2] + Math.sin(angle) * radius;
+          createGreenery(tx, tz, group);
+        }
+
+        const dotGeo = new THREE.SphereGeometry(0.06, 16, 16);
+        const dotMat = new THREE.MeshStandardMaterial({ color: d.color, emissive: d.color, emissiveIntensity: 0.5, roughness: 0.3 });
+        const dot = new THREE.Mesh(dotGeo, dotMat);
+        dot.position.set(d.pos[0], 0.3, d.pos[2]);
+        group.add(dot);
+
+        const ringGeo = new THREE.RingGeometry(0.08, 0.1, 32);
+        const ringMat = new THREE.MeshBasicMaterial({ color: d.color, transparent: true, opacity: 0.5, side: THREE.DoubleSide });
+        const ring = new THREE.Mesh(ringGeo, ringMat);
+        ring.rotation.x = -Math.PI / 2;
+        ring.position.set(d.pos[0], 0.15, d.pos[2]);
+        ring.userData.pulseRing = true;
+        group.add(ring);
+
+        scene.add(group);
+      });
+    }
+
+    function createSidebarButtons() {
+      const sidebar = document.getElementById('sidebar');
+      districts.forEach(d => {
+        const btn = document.createElement('button');
+        btn.className = 'district-btn';
+        btn.textContent = d.id;
+        btn.title = d.name;
+        btn.addEventListener('click', () => selectDistrict(d.id));
+        sidebar.appendChild(btn);
+      });
+    }
+
+    function selectDistrict(id) {
+      const d = districts.find(d => d.id === id);
+      if (!d) return;
+
+      selectedDistrict = id;
+      autoRotate = false;
+
+      document.querySelectorAll('.district-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.textContent === id);
+      });
+
+      const offset = new THREE.Vector3(3, 4, 3);
+      targetCamPos.set(d.pos[0] + offset.x, offset.y, d.pos[2] + offset.z);
+      targetLookAt.set(d.pos[0], 1, d.pos[2]);
+
+      const panel = document.getElementById('info-panel');
+      panel.classList.add('visible');
+      document.getElementById('panel-label').textContent = d.label;
+      document.getElementById('panel-title').textContent = d.name;
+      document.getElementById('panel-desc').textContent = d.desc;
+      document.getElementById('stat-units').textContent = d.units;
+      document.getElementById('stat-value').textContent = d.value;
+      document.getElementById('stat-yield').textContent = d.yield;
+
+      // Dim non-selected districts
+      Object.keys(districtGroups).forEach(key => {
+        const group = districtGroups[key];
+        const isSelected = key === id;
+        group.traverse(child => {
+          if (!child.isMesh || child.userData.pulseRing) return;
+          // Store original opacity on first selection
+          if (child.userData._origOpacity === undefined) {
+            child.userData._origOpacity = child.material.opacity;
+            child.userData._origTransparent = child.material.transparent;
+          }
+          child.material.transparent = true;
+          child.material.opacity = isSelected ? child.userData._origOpacity : 0.15;
+        });
+      });
+    }
+
+    function deselectDistrict() {
+      selectedDistrict = null;
+      autoRotate = true;
+
+      document.querySelectorAll('.district-btn').forEach(b => b.classList.remove('active'));
+      document.getElementById('info-panel').classList.remove('visible');
+
+      targetLookAt.set(0, 0, 0);
+
+      // Restore all districts to original state
+      Object.values(districtGroups).forEach(group => {
+        group.traverse(child => {
+          if (!child.isMesh || child.userData.pulseRing) return;
+          if (child.userData._origOpacity !== undefined) {
+            child.material.opacity = child.userData._origOpacity;
+            child.material.transparent = child.userData._origTransparent;
+          }
+        });
+      });
+    }
+
+    function setupEvents() {
+      const canvas = renderer.domElement;
+
+      canvas.addEventListener('mousedown', e => {
+        isDragging = true;
+        autoRotate = false;
+        previousMousePosition = { x: e.clientX, y: e.clientY };
+      });
+
+      canvas.addEventListener('mousemove', e => {
+        mouse.x = (e.clientX / window.innerWidth) * 2 - 1;
+        mouse.y = -(e.clientY / window.innerHeight) * 2 + 1;
+
+        if (isDragging) {
+          const deltaMove = { x: e.clientX - previousMousePosition.x, y: e.clientY - previousMousePosition.y };
+          spherical.theta -= deltaMove.x * 0.005;
+          spherical.phi = Math.max(0.3, Math.min(Math.PI / 2.2, spherical.phi + deltaMove.y * 0.005));
+          previousMousePosition = { x: e.clientX, y: e.clientY };
+        }
+      });
+
+      canvas.addEventListener('mouseup', () => {
+        isDragging = false;
+        if (!selectedDistrict) autoRotate = true;
+      });
+
+      canvas.addEventListener('click', e => {
+        raycaster.setFromCamera(mouse, camera);
+        const intersects = raycaster.intersectObjects(buildingMeshes);
+        if (intersects.length > 0) {
+          const hit = intersects[0].object;
+          let foundId = null;
+          if (hit.userData.districtId) {
+            foundId = hit.userData.districtId;
+          } else {
+            for (const [id, group] of Object.entries(districtGroups)) {
+              group.traverse(child => { if (child === hit) foundId = id; });
+              if (foundId) break;
+            }
+          }
+          if (foundId) {
+            if (selectedDistrict === foundId) deselectDistrict();
+            else selectDistrict(foundId);
+          }
+        } else if (selectedDistrict) {
+          deselectDistrict();
+        }
+      });
+
+      canvas.addEventListener('wheel', e => {
+        spherical.radius = Math.max(6, Math.min(22, spherical.radius + e.deltaY * 0.01));
+      });
+
+      // Touch support
+      let touchStartX = 0, touchStartY = 0;
+      canvas.addEventListener('touchstart', e => {
+        if (e.touches.length === 1) {
+          isDragging = true;
+          autoRotate = false;
+          touchStartX = e.touches[0].clientX;
+          touchStartY = e.touches[0].clientY;
+          previousMousePosition = { x: touchStartX, y: touchStartY };
+        }
+      }, { passive: true });
+
+      canvas.addEventListener('touchmove', e => {
+        if (isDragging && e.touches.length === 1) {
+          const deltaMove = { x: e.touches[0].clientX - previousMousePosition.x, y: e.touches[0].clientY - previousMousePosition.y };
+          spherical.theta -= deltaMove.x * 0.005;
+          spherical.phi = Math.max(0.3, Math.min(Math.PI / 2.2, spherical.phi + deltaMove.y * 0.005));
+          previousMousePosition = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+        }
+      }, { passive: true });
+
+      canvas.addEventListener('touchend', () => {
+        isDragging = false;
+        if (!selectedDistrict) autoRotate = true;
+      }, { passive: true });
+
+      window.addEventListener('resize', () => {
+        camera.aspect = window.innerWidth / window.innerHeight;
+        camera.updateProjectionMatrix();
+        renderer.setSize(window.innerWidth, window.innerHeight);
+      });
+    }
+
+    function animate() {
+      requestAnimationFrame(animate);
+      const t = clock.getElapsedTime();
+
+      if (autoRotate && !isDragging) {
+        spherical.theta += 0.002;
+      }
+
+      if (!selectedDistrict) {
+        targetCamPos.setFromSpherical(spherical);
+        targetLookAt.set(0, 0, 0);
+      }
+
+      camera.position.lerp(targetCamPos, 0.03);
+      currentLookAt.lerp(targetLookAt, 0.03);
+      camera.lookAt(currentLookAt);
+
+      scene.traverse(child => {
+        if (child.userData.pulseRing) {
+          const s = 1 + Math.sin(t * 3) * 0.3;
+          child.scale.set(s, s, 1);
+          child.material.opacity = 0.3 + Math.sin(t * 3) * 0.2;
+        }
+        // Drift clouds
+        if (child.userData.isCloud && child.isInstancedMesh) {
+          const dummy = new THREE.Object3D();
+          for (let i = 0; i < child.count; i++) {
+            child.getMatrixAt(i, dummy.matrix);
+            dummy.matrix.decompose(dummy.position, dummy.quaternion, dummy.scale);
+            dummy.position.x += 0.003;
+            if (dummy.position.x > 50) dummy.position.x = -50;
+            dummy.updateMatrix();
+            child.setMatrixAt(i, dummy.matrix);
+          }
+          child.instanceMatrix.needsUpdate = true;
+        }
+      });
+
+      if (selectedDistrict && districtGroups[selectedDistrict]) {
+        districtGroups[selectedDistrict].children.forEach((child, i) => {
+          if (child.type === 'Group') {
+            child.position.y = (child.userData.originalY || 0) + Math.sin(t * 2 + i) * 0.03;
+          }
+        });
+      }
+
+      renderer.render(scene, camera);
+    }
+
+    init();
+  </script>
+</body>
+</html>
